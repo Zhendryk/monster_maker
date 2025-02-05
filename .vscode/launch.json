@@ -8,7 +8,7 @@
             "name": "Monster Maker",
             "type": "python",
             "request": "launch",
-            "program": "${workspaceFolder}/__main__.py",
+            "program": "${workspaceFolder}/monster_maker/__main__.py",
             "console": "integratedTerminal",
             "justMyCode": true
         },

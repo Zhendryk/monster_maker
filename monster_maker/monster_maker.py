@@ -1,5 +1,12 @@
 from collections.abc import Sequence
-from monster_maker.dnd.dnd import *
+from monster_maker.dnd.dnd import (
+    Encounter,
+    Monster,
+    Size,
+    Alignment,
+    EncounterDifficulty,
+    EncounterSize,
+)
 from monster_maker.openai_local.openai_agent import OpenAIAgent
 from monster_maker.utilities import yes_or_no_question, numbered_choice
 

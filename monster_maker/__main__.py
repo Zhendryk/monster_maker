@@ -1,4 +1,4 @@
-from monster_maker import MonsterMaker
+from monster_maker.monster_maker import MonsterMaker
 
 if __name__ == "__main__":
     monster_maker = MonsterMaker()
