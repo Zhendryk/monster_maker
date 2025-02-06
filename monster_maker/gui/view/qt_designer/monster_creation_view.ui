@@ -1,0 +1,285 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<ui version="4.0">
+ <class>MonsterCreationView</class>
+ <widget class="QWidget" name="MonsterCreationView">
+  <property name="geometry">
+   <rect>
+    <x>0</x>
+    <y>0</y>
+    <width>510</width>
+    <height>432</height>
+   </rect>
+  </property>
+  <property name="windowTitle">
+   <string>Form</string>
+  </property>
+  <layout class="QVBoxLayout" name="verticalLayout">
+   <item>
+    <widget class="QLabel" name="_lbl_title">
+     <property name="maximumSize">
+      <size>
+       <width>16777215</width>
+       <height>20</height>
+      </size>
+     </property>
+     <property name="font">
+      <font>
+       <weight>75</weight>
+       <bold>true</bold>
+      </font>
+     </property>
+     <property name="text">
+      <string>Create New Monster</string>
+     </property>
+     <property name="alignment">
+      <set>Qt::AlignCenter</set>
+     </property>
+    </widget>
+   </item>
+   <item>
+    <layout class="QFormLayout" name="fl_traits">
+     <item row="0" column="0">
+      <widget class="QLabel" name="_lbl_name">
+       <property name="text">
+        <string>Name:</string>
+       </property>
+      </widget>
+     </item>
+     <item row="1" column="0">
+      <widget class="QLabel" name="_lbl_description">
+       <property name="text">
+        <string>Description:</string>
+       </property>
+      </widget>
+     </item>
+     <item row="2" column="0">
+      <widget class="QLabel" name="_lbl_habitat">
+       <property name="text">
+        <string>Habitat:</string>
+       </property>
+      </widget>
+     </item>
+     <item row="2" column="1">
+      <widget class="QLineEdit" name="lineedit_habitat"/>
+     </item>
+     <item row="3" column="0">
+      <widget class="QLabel" name="_lbl_treasure">
+       <property name="text">
+        <string>Treasure:</string>
+       </property>
+      </widget>
+     </item>
+     <item row="3" column="1">
+      <widget class="QLineEdit" name="lineedit_treasure"/>
+     </item>
+     <item row="4" column="0">
+      <widget class="QLabel" name="_lbl_creature_type">
+       <property name="text">
+        <string>Creature Type:</string>
+       </property>
+      </widget>
+     </item>
+     <item row="4" column="1">
+      <widget class="QComboBox" name="cb_creature_type"/>
+     </item>
+     <item row="5" column="0">
+      <widget class="QLabel" name="_lbl_alignment">
+       <property name="text">
+        <string>Alignment:</string>
+       </property>
+      </widget>
+     </item>
+     <item row="5" column="1">
+      <widget class="QComboBox" name="cb_alignment"/>
+     </item>
+     <item row="6" column="0">
+      <widget class="QLabel" name="_lbl_size">
+       <property name="text">
+        <string>Size:</string>
+       </property>
+      </widget>
+     </item>
+     <item row="6" column="1">
+      <widget class="QComboBox" name="cb_size"/>
+     </item>
+     <item row="0" column="1">
+      <layout class="QHBoxLayout" name="hl_name">
+       <item>
+        <widget class="QLineEdit" name="lineedit_name"/>
+       </item>
+       <item>
+        <widget class="QPushButton" name="btn_generate_names">
+         <property name="text">
+          <string>Generate</string>
+         </property>
+        </widget>
+       </item>
+       <item>
+        <widget class="QProgressBar" name="progressbar_name">
+         <property name="value">
+          <number>24</number>
+         </property>
+        </widget>
+       </item>
+      </layout>
+     </item>
+     <item row="1" column="1">
+      <layout class="QHBoxLayout" name="hl_description">
+       <item>
+        <widget class="QTextEdit" name="textedit_description"/>
+       </item>
+       <item>
+        <widget class="QPushButton" name="btn_refine_description">
+         <property name="text">
+          <string>Refine</string>
+         </property>
+        </widget>
+       </item>
+       <item>
+        <widget class="QProgressBar" name="progressbar_description">
+         <property name="value">
+          <number>24</number>
+         </property>
+        </widget>
+       </item>
+      </layout>
+     </item>
+     <item row="7" column="0">
+      <widget class="QLabel" name="_lbl_skills">
+       <property name="text">
+        <string>Skills:</string>
+       </property>
+      </widget>
+     </item>
+     <item row="7" column="1">
+      <layout class="QHBoxLayout" name="hl_skills">
+       <item>
+        <widget class="QComboBox" name="cb_skills"/>
+       </item>
+       <item>
+        <widget class="QPushButton" name="btn_skills_proficient">
+         <property name="text">
+          <string>Proficient</string>
+         </property>
+        </widget>
+       </item>
+       <item>
+        <widget class="QPushButton" name="btn_skills_expert">
+         <property name="text">
+          <string>Expert</string>
+         </property>
+        </widget>
+       </item>
+      </layout>
+     </item>
+     <item row="8" column="0">
+      <widget class="QLabel" name="_lbl_condition_immunities">
+       <property name="text">
+        <string>Condition Immunities:</string>
+       </property>
+      </widget>
+     </item>
+     <item row="8" column="1">
+      <layout class="QHBoxLayout" name="hl_conditions">
+       <item>
+        <widget class="QComboBox" name="cb_conditions"/>
+       </item>
+       <item>
+        <widget class="QPushButton" name="btn_condition_immune">
+         <property name="text">
+          <string>Immune</string>
+         </property>
+        </widget>
+       </item>
+      </layout>
+     </item>
+     <item row="9" column="0">
+      <widget class="QLabel" name="_lbl_encounter_difficulty">
+       <property name="text">
+        <string>Encounter Difficulty:</string>
+       </property>
+      </widget>
+     </item>
+     <item row="9" column="1">
+      <widget class="QComboBox" name="cb_encounter_difficulty"/>
+     </item>
+     <item row="10" column="0">
+      <widget class="QLabel" name="_lbl_encounter_size">
+       <property name="text">
+        <string>Encounter Size:</string>
+       </property>
+      </widget>
+     </item>
+     <item row="10" column="1">
+      <widget class="QComboBox" name="cb_encounter_size"/>
+     </item>
+     <item row="11" column="0">
+      <widget class="QLabel" name="_lbl_languages">
+       <property name="text">
+        <string>Languages:</string>
+       </property>
+      </widget>
+     </item>
+     <item row="11" column="1">
+      <layout class="QHBoxLayout" name="hl_languages">
+       <item>
+        <widget class="QComboBox" name="cb_languages"/>
+       </item>
+       <item>
+        <widget class="QPushButton" name="btn_add_language">
+         <property name="text">
+          <string>Add</string>
+         </property>
+        </widget>
+       </item>
+       <item>
+        <widget class="QPushButton" name="btn_remove_language">
+         <property name="text">
+          <string>Remove</string>
+         </property>
+        </widget>
+       </item>
+      </layout>
+     </item>
+     <item row="12" column="0">
+      <widget class="QLabel" name="_lbl_telepathy">
+       <property name="text">
+        <string>Telepathy:</string>
+       </property>
+      </widget>
+     </item>
+     <item row="12" column="1">
+      <layout class="QHBoxLayout" name="hl_telepathy">
+       <item>
+        <widget class="QCheckBox" name="checkbox_telepathy">
+         <property name="text">
+          <string/>
+         </property>
+        </widget>
+       </item>
+       <item>
+        <widget class="QLabel" name="_lbl_telepathy_range">
+         <property name="text">
+          <string>Range:</string>
+         </property>
+        </widget>
+       </item>
+       <item>
+        <widget class="QLineEdit" name="lineedit_telepathy_range"/>
+       </item>
+       <item>
+        <widget class="QLabel" name="_lbl_telepathy_ft">
+         <property name="text">
+          <string>ft.</string>
+         </property>
+        </widget>
+       </item>
+      </layout>
+     </item>
+    </layout>
+   </item>
+  </layout>
+ </widget>
+ <resources/>
+ <connections/>
+</ui>
