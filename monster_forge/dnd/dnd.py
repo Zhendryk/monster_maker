@@ -17,6 +17,13 @@ class Sense(Enum):
     def display_name(self) -> str:
         return " ".join([token.capitalize() for token in self.name.split("_")])
 
+    @staticmethod
+    def from_display_name(name: str) -> Sense:
+        for x in Sense:
+            if x.name.lower() == "_".join([c for c in name.split(" ")]).lower():
+                return x
+        raise ValueError(f"invalid Sense: {name}")
+
 
 class Condition(Enum):
     BLINDED = auto()
@@ -39,6 +46,13 @@ class Condition(Enum):
     def display_name(self) -> str:
         return " ".join([token.capitalize() for token in self.name.split("_")])
 
+    @staticmethod
+    def from_display_name(name: str) -> Condition:
+        for x in Condition:
+            if x.name.lower() == "_".join([c for c in name.split(" ")]).lower():
+                return x
+        raise ValueError(f"invalid Condition: {name}")
+
 
 class DamageType(Enum):
     ACID = auto()
@@ -59,6 +73,13 @@ class DamageType(Enum):
     def display_name(self) -> str:
         return " ".join([token.capitalize() for token in self.name.split("_")])
 
+    @staticmethod
+    def from_display_name(name: str) -> DamageType:
+        for x in DamageType:
+            if x.name.lower() == "_".join([c for c in name.split(" ")]).lower():
+                return x
+        raise ValueError(f"invalid DamageType: {name}")
+
 
 class Resistance(Enum):
     NORMAL = auto()
@@ -66,11 +87,49 @@ class Resistance(Enum):
     RESISTANT = auto()
     IMMUNE = auto()
 
+    @property
+    def display_name(self) -> str:
+        return " ".join([token.capitalize() for token in self.name.split("_")])
+
+    @staticmethod
+    def from_display_name(name: str) -> Resistance:
+        for x in Resistance:
+            if x.name.lower() == "_".join([c for c in name.split(" ")]).lower():
+                return x
+        raise ValueError(f"invalid Resistance: {name}")
+
 
 class Proficiency(Enum):
     NORMAL = auto()
     PROFICIENT = auto()
     EXPERTISE = auto()
+
+    @property
+    def display_name(self) -> str:
+        return " ".join([token.capitalize() for token in self.name.split("_")])
+
+    @staticmethod
+    def from_display_name(name: str) -> Proficiency:
+        for x in Proficiency:
+            if x.name.lower() == "_".join([c for c in name.split(" ")]).lower():
+                return x
+        raise ValueError(f"invalid Proficiency: {name}")
+
+
+class LanguageProficiency(Enum):
+    UNDERSTANDS = auto()
+    SPEAKS = auto()
+
+    @property
+    def display_name(self) -> str:
+        return " ".join([token.capitalize() for token in self.name.split("_")])
+
+    @staticmethod
+    def from_display_name(name: str) -> LanguageProficiency:
+        for lp in LanguageProficiency:
+            if lp.name.lower() == "_".join([c for c in name.split(" ")]).lower():
+                return lp
+        raise ValueError(f"invalid LanguageProficiency: {name}")
 
 
 class Skill(Enum):
@@ -106,6 +165,13 @@ class Skill(Enum):
     def display_name(self) -> str:
         return " ".join([token.capitalize() for token in self.name.split("_")])
 
+    @staticmethod
+    def from_display_name(name: str) -> Skill:
+        for s in Skill:
+            if s.name.lower() == "_".join([c for c in name.split(" ")]).lower():
+                return s
+        raise ValueError(f"invalid Skill: {name}")
+
 
 class SpeedType(Enum):
     WALKING = auto()
@@ -117,6 +183,13 @@ class SpeedType(Enum):
     @property
     def display_name(self) -> str:
         return " ".join([token.capitalize() for token in self.name.split("_")])
+
+    @staticmethod
+    def from_display_name(name: str) -> SpeedType:
+        for s in SpeedType:
+            if s.name.lower() == "_".join([c for c in name.split(" ")]).lower():
+                return s
+        raise ValueError(f"invalid Speed Type: {name}")
 
 
 class RollType(Enum):
@@ -190,6 +263,27 @@ class Dice:
             start=self.min_value, stop=self.max_value + 1
         )  # +1 because it is not inclusive of the upper bound
 
+    def hit_points(self, ability_scores: AbilityScores) -> str:
+        if len(self.dice) > 1:
+            raise NotImplementedError
+        die, cnt = self.dice.popitem()
+        self.dice[die] = cnt
+        total_hp = self.average_value + ability_scores.constitution_modifier * cnt
+        return f"{total_hp} ({cnt}{die.name.lower()} + {ability_scores.constitution_modifier * cnt})"
+
+    @property
+    def num_hit_dice(self) -> int:
+        return sum(cnt for cnt in self.dice.values())
+
+    @staticmethod
+    def closest_to(hp: int, monster_size: Size, max_range: int = 51) -> Dice:
+        distances = {
+            i: abs(hp - Dice({monster_size.hit_die: i}).average_value)
+            for i in range(max_range)
+        }
+        closest = min(distances, key=lambda k: distances[k])
+        return Dice({monster_size.hit_die: closest})
+
 
 class Ability(Enum):
     STRENGTH = auto()
@@ -202,6 +296,13 @@ class Ability(Enum):
     @property
     def display_name(self) -> str:
         return " ".join([token.capitalize() for token in self.name.split("_")])
+
+    @staticmethod
+    def from_display_name(name: str) -> Ability:
+        for a in Ability:
+            if a.name.lower() == "_".join([c for c in name.split(" ")]).lower():
+                return a
+        raise ValueError(f"invalid Ability: {name}")
 
 
 class Size(Enum):
@@ -312,6 +413,13 @@ class Language(Enum):
     def display_name(self) -> str:
         return " ".join([token.capitalize() for token in self.name.split("_")])
 
+    @classmethod
+    def from_display_name(cls, name: str) -> Language:
+        for x in cls:
+            if x.name.lower() == "_".join([token for token in name.split(" ")]).lower():
+                return x
+        raise ValueError(f"invalid {cls.__name__}: {name}")
+
 
 CR_EXPERIENCE_POINTS: dict[int | float, int] = {
     0: 10,
@@ -349,6 +457,42 @@ CR_EXPERIENCE_POINTS: dict[int | float, int] = {
     29: 135000,
     30: 155000,
 }
+CR_AC: dict[int | float, int] = {
+    0: 10,
+    1 / 8: 11,
+    1 / 4: 11,
+    1 / 2: 12,
+    1: 12,
+    2: 13,
+    3: 13,
+    4: 14,
+    5: 15,
+    6: 15,
+    7: 15,
+    8: 15,
+    9: 16,
+    10: 17,
+    11: 17,
+    12: 17,
+    13: 18,
+    14: 19,
+    15: 19,
+    16: 19,
+    17: 20,
+    18: 21,
+    19: 21,
+    20: 21,
+    21: 22,
+    22: 23,
+    23: 23,
+    24: 23,
+    25: 24,
+    26: 25,
+    27: 25,
+    28: 25,
+    29: 26,
+    30: 27,
+}
 
 
 @dataclass
@@ -379,6 +523,28 @@ class ChallengeRating:
     @property
     def experience_points(self) -> int:
         return CR_EXPERIENCE_POINTS[self.rating]
+
+    @property
+    def armor_class(self) -> int:
+        return CR_AC[self.rating]
+
+    def hit_points(self, ability_scores: AbilityScores, monster_size: Size) -> str:
+        if self.rating < 1:
+            hp = math.ceil(30 * math.sqrt(self.rating))
+        elif self.rating >= 1 and self.rating <= 19:
+            hp = math.ceil(15 * (self.rating + 1))
+        else:
+            hp = math.ceil(45 * (self.rating - 13))
+        hit_dice = Dice.closest_to(hp, monster_size)
+        return hit_dice.hit_points(ability_scores)
+
+    @property
+    def display(self) -> str:
+        if isinstance(self.rating, float):
+            numerator, denominator = self.rating.as_integer_ratio()
+            return f"{numerator}/{denominator} (XP {self.experience_points}; PB +{self.proficiency_bonus})"
+        else:
+            return f"{self.rating} (XP {self.experience_points}; PB +{self.proficiency_bonus})"
 
 
 @dataclass
@@ -549,7 +715,9 @@ class EncounterDifficulty(Enum):
     def experience_points_budget(
         self, avg_party_level: int, num_players: int = 1
     ) -> int:
-        xp_budget_per_player = ENCOUNTER_DIFFICULTY_XP_BUDGET[self][avg_party_level]
+        xp_budget_per_player = ENCOUNTER_DIFFICULTY_XP_BUDGET[self].get(
+            avg_party_level, 0
+        )
         total_xp_budget_for_encounter = xp_budget_per_player * num_players
         return total_xp_budget_for_encounter
 
