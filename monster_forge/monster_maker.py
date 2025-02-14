@@ -1,5 +1,5 @@
 from collections.abc import Sequence
-from monster_maker.dnd.dnd import (
+from monster_forge.dnd.dnd import (
     Encounter,
     Monster,
     Size,
@@ -7,8 +7,8 @@ from monster_maker.dnd.dnd import (
     EncounterDifficulty,
     EncounterSize,
 )
-from monster_maker.openai_local.openai_agent import OpenAIAgent
-from monster_maker.utilities import yes_or_no_question, numbered_choice
+from monster_forge.openai_local.openai_agent import OpenAIAgent
+from monster_forge.utilities import yes_or_no_question, numbered_choice
 
 
 class MonsterMaker:

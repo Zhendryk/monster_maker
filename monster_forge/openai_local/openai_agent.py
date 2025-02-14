@@ -1,12 +1,12 @@
 import requests
 from pathlib import Path
 from openai import OpenAI
-from monster_maker.openai_local.constants import (
+from monster_forge.openai_local.constants import (
     OPENAPI_SECRET_KEY,
     ORGANIZATION_ID,
     PROJECT_ID,
 )
-from monster_maker.openai_local.enums import (
+from monster_forge.openai_local.enums import (
     OpenAIModel,
     DallEImageSize,
     DallEImageQuality,

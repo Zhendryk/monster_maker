@@ -13,6 +13,10 @@ class Sense(Enum):
     TREMORSENSE = auto()
     TRUESIGHT = auto()
 
+    @property
+    def display_name(self) -> str:
+        return " ".join([token.capitalize() for token in self.name.split("_")])
+
 
 class Condition(Enum):
     BLINDED = auto()
@@ -31,6 +35,10 @@ class Condition(Enum):
     STUNNED = auto()
     UNCONSCIOUS = auto()
 
+    @property
+    def display_name(self) -> str:
+        return " ".join([token.capitalize() for token in self.name.split("_")])
+
 
 class DamageType(Enum):
     ACID = auto()
@@ -46,6 +54,10 @@ class DamageType(Enum):
     BLUDGEONING = auto()
     SLASHING = auto()
     PIERCING = auto()
+
+    @property
+    def display_name(self) -> str:
+        return " ".join([token.capitalize() for token in self.name.split("_")])
 
 
 class Resistance(Enum):
@@ -90,6 +102,10 @@ class Skill(Enum):
     PERFORMANCE = auto()
     PERSUASION = auto()
 
+    @property
+    def display_name(self) -> str:
+        return " ".join([token.capitalize() for token in self.name.split("_")])
+
 
 class SpeedType(Enum):
     WALKING = auto()
@@ -97,6 +113,10 @@ class SpeedType(Enum):
     CLIMB = auto()
     FLY = auto()
     SWIM = auto()
+
+    @property
+    def display_name(self) -> str:
+        return " ".join([token.capitalize() for token in self.name.split("_")])
 
 
 class RollType(Enum):
@@ -179,6 +199,10 @@ class Ability(Enum):
     WISDOM = auto()
     CHARISMA = auto()
 
+    @property
+    def display_name(self) -> str:
+        return " ".join([token.capitalize() for token in self.name.split("_")])
+
 
 class Size(Enum):
     TINY = auto()
@@ -212,6 +236,10 @@ class Size(Enum):
                 return Die.D20
             case _:
                 raise NotImplementedError
+
+    @property
+    def display_name(self) -> str:
+        return " ".join([token.capitalize() for token in self.name.split("_")])
 
 
 @dataclass
@@ -272,6 +300,10 @@ class Language(Enum):
                 return True
             case _:
                 return False
+
+    @property
+    def display_name(self) -> str:
+        return " ".join([token.capitalize() for token in self.name.split("_")])
 
 
 CR_EXPERIENCE_POINTS: dict[int | float, int] = {
@@ -405,6 +437,10 @@ class MonsterType(Enum):
     PLANT = auto()
     UNDEAD = auto()
 
+    @property
+    def display_name(self) -> str:
+        return " ".join([token.capitalize() for token in self.name.split("_")])
+
 
 class Alignment(Enum):
     UNALIGNED = auto()
@@ -424,6 +460,10 @@ class Alignment(Enum):
             if alignment_name.lower() == a.name.lower():
                 return a
         raise ValueError(f"Invalid alignment: {alignment_name}")
+
+    @property
+    def display_name(self) -> str:
+        return " ".join([token.capitalize() for token in self.name.split("_")])
 
 
 class EncounterSize(Enum):
@@ -456,6 +496,10 @@ class EncounterSize(Enum):
                 return es
         raise ValueError(f"invalid EncounterSize: {size_name}")
 
+    @property
+    def display_name(self) -> str:
+        return " ".join([token.capitalize() for token in self.name.split("_")])
+
 
 class EncounterDifficulty(Enum):
     LOW = auto()
@@ -475,6 +519,10 @@ class EncounterDifficulty(Enum):
             if ed.name.lower() == difficulty_name.lower():
                 return ed
         raise ValueError(f"invalid EncounterDifficulty: {difficulty_name}")
+
+    @property
+    def display_name(self) -> str:
+        return " ".join([token.capitalize() for token in self.name.split("_")])
 
 
 ENCOUNTER_DIFFICULTY_XP_BUDGET: dict[EncounterDifficulty, dict[int, int]] = {

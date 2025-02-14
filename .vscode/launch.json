@@ -5,10 +5,11 @@
     "version": "0.2.0",
     "configurations": [
         {
-            "name": "Monster Maker",
+            "name": "Monster Forge",
             "type": "python",
             "request": "launch",
-            "program": "${workspaceFolder}/monster_maker/__main__.py",
+            // "program": "${workspaceFolder}/monster_forge/__main__.py",
+            "module": "monster_forge",
             "console": "integratedTerminal",
             "justMyCode": true
         },
