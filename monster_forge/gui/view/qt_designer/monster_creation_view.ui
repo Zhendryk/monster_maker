@@ -7,7 +7,7 @@
     <x>0</x>
     <y>0</y>
     <width>510</width>
-    <height>432</height>
+    <height>811</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -37,11 +37,21 @@
     </widget>
    </item>
    <item>
-    <layout class="QFormLayout" name="fl_traits">
-     <item row="0" column="0">
-      <widget class="QLabel" name="_lbl_name">
+    <widget class="QProgressBar" name="progressbar_main">
+     <property name="value">
+      <number>24</number>
+     </property>
+    </widget>
+   </item>
+   <item>
+    <layout class="QGridLayout" name="gl_main">
+     <item row="0" column="1">
+      <widget class="QLineEdit" name="lineedit_name"/>
+     </item>
+     <item row="0" column="2">
+      <widget class="QPushButton" name="btn_suggest_names">
        <property name="text">
-        <string>Name:</string>
+        <string>Suggest</string>
        </property>
       </widget>
      </item>
@@ -52,229 +62,381 @@
        </property>
       </widget>
      </item>
-     <item row="2" column="0">
-      <widget class="QLabel" name="_lbl_habitat">
+     <item row="1" column="2">
+      <widget class="QPushButton" name="btn_refine_description">
        <property name="text">
-        <string>Habitat:</string>
+        <string>Refine</string>
+       </property>
+      </widget>
+     </item>
+     <item row="0" column="0">
+      <widget class="QLabel" name="_lbl_name">
+       <property name="text">
+        <string>Name:</string>
+       </property>
+      </widget>
+     </item>
+     <item row="1" column="1">
+      <widget class="QTextEdit" name="textedit_description"/>
+     </item>
+     <item row="2" column="0">
+      <widget class="QLabel" name="_lbl_artwork">
+       <property name="text">
+        <string>Artwork:</string>
        </property>
       </widget>
      </item>
      <item row="2" column="1">
-      <widget class="QLineEdit" name="lineedit_habitat"/>
-     </item>
-     <item row="3" column="0">
-      <widget class="QLabel" name="_lbl_treasure">
+      <widget class="QLabel" name="lbl_artwork">
        <property name="text">
-        <string>Treasure:</string>
+        <string/>
        </property>
       </widget>
      </item>
-     <item row="3" column="1">
-      <widget class="QLineEdit" name="lineedit_treasure"/>
-     </item>
-     <item row="4" column="0">
-      <widget class="QLabel" name="_lbl_creature_type">
+     <item row="2" column="2">
+      <widget class="QPushButton" name="btn_generate_artwork">
        <property name="text">
-        <string>Creature Type:</string>
+        <string>Generate</string>
        </property>
       </widget>
      </item>
-     <item row="4" column="1">
-      <widget class="QComboBox" name="cb_creature_type"/>
-     </item>
-     <item row="5" column="0">
+    </layout>
+   </item>
+   <item>
+    <widget class="Line" name="_hl_1">
+     <property name="orientation">
+      <enum>Qt::Horizontal</enum>
+     </property>
+    </widget>
+   </item>
+   <item>
+    <widget class="QPushButton" name="btn_generate_all">
+     <property name="text">
+      <string>Generate All</string>
+     </property>
+    </widget>
+   </item>
+   <item>
+    <widget class="QProgressBar" name="progressbar_generate_all">
+     <property name="value">
+      <number>24</number>
+     </property>
+    </widget>
+   </item>
+   <item>
+    <widget class="Line" name="_hl_2">
+     <property name="orientation">
+      <enum>Qt::Horizontal</enum>
+     </property>
+    </widget>
+   </item>
+   <item>
+    <layout class="QGridLayout" name="gl_attributes">
+     <item row="1" column="0">
       <widget class="QLabel" name="_lbl_alignment">
        <property name="text">
         <string>Alignment:</string>
        </property>
       </widget>
      </item>
-     <item row="5" column="1">
+     <item row="0" column="1">
+      <widget class="QComboBox" name="cb_creature_type"/>
+     </item>
+     <item row="2" column="2">
+      <widget class="QPushButton" name="btn_suggest_size">
+       <property name="text">
+        <string>Suggest</string>
+       </property>
+      </widget>
+     </item>
+     <item row="0" column="0">
+      <widget class="QLabel" name="_lbl_creature_type">
+       <property name="text">
+        <string>Creature Type:</string>
+       </property>
+      </widget>
+     </item>
+     <item row="0" column="2">
+      <widget class="QPushButton" name="btn_suggest_creature_type">
+       <property name="text">
+        <string>Suggest</string>
+       </property>
+      </widget>
+     </item>
+     <item row="1" column="2">
+      <widget class="QPushButton" name="btn_suggest_alignment">
+       <property name="text">
+        <string>Suggest</string>
+       </property>
+      </widget>
+     </item>
+     <item row="1" column="1">
       <widget class="QComboBox" name="cb_alignment"/>
      </item>
-     <item row="6" column="0">
+     <item row="2" column="0">
       <widget class="QLabel" name="_lbl_size">
        <property name="text">
         <string>Size:</string>
        </property>
       </widget>
      </item>
-     <item row="6" column="1">
+     <item row="2" column="1">
       <widget class="QComboBox" name="cb_size"/>
      </item>
+     <item row="3" column="0">
+      <widget class="QLabel" name="_lbl_challenge_rating">
+       <property name="text">
+        <string>Challenge Rating:</string>
+       </property>
+      </widget>
+     </item>
+     <item row="3" column="1">
+      <widget class="QLineEdit" name="lineedit_challenge_rating"/>
+     </item>
+     <item row="3" column="2">
+      <widget class="QLabel" name="lbl_per_monster_for_x_monsters">
+       <property name="text">
+        <string>per monster, for x monsters</string>
+       </property>
+      </widget>
+     </item>
+    </layout>
+   </item>
+   <item>
+    <widget class="Line" name="_hl_3">
+     <property name="orientation">
+      <enum>Qt::Horizontal</enum>
+     </property>
+    </widget>
+   </item>
+   <item>
+    <layout class="QGridLayout" name="gl_skills">
+     <item row="1" column="5">
+      <widget class="QPushButton" name="btn_remove_damage">
+       <property name="text">
+        <string>Remove</string>
+       </property>
+      </widget>
+     </item>
+     <item row="1" column="0">
+      <widget class="QLabel" name="_lbl_dmg">
+       <property name="text">
+        <string>Damage:</string>
+       </property>
+      </widget>
+     </item>
+     <item row="1" column="2">
+      <widget class="QPushButton" name="btn_resistant_damage">
+       <property name="text">
+        <string>Resistant</string>
+       </property>
+      </widget>
+     </item>
+     <item row="2" column="5">
+      <widget class="QPushButton" name="btn_remove_condition">
+       <property name="text">
+        <string>Remove</string>
+       </property>
+      </widget>
+     </item>
      <item row="0" column="1">
-      <layout class="QHBoxLayout" name="hl_name">
-       <item>
-        <widget class="QLineEdit" name="lineedit_name"/>
-       </item>
-       <item>
-        <widget class="QPushButton" name="btn_generate_names">
-         <property name="text">
-          <string>Generate</string>
-         </property>
-        </widget>
-       </item>
-       <item>
-        <widget class="QProgressBar" name="progressbar_name">
-         <property name="value">
-          <number>24</number>
-         </property>
-        </widget>
-       </item>
-      </layout>
+      <widget class="QComboBox" name="cb_skills"/>
      </item>
-     <item row="1" column="1">
-      <layout class="QHBoxLayout" name="hl_description">
-       <item>
-        <widget class="QTextEdit" name="textedit_description"/>
-       </item>
-       <item>
-        <widget class="QPushButton" name="btn_refine_description">
-         <property name="text">
-          <string>Refine</string>
-         </property>
-        </widget>
-       </item>
-       <item>
-        <widget class="QProgressBar" name="progressbar_description">
-         <property name="value">
-          <number>24</number>
-         </property>
-        </widget>
-       </item>
-      </layout>
-     </item>
-     <item row="7" column="0">
-      <widget class="QLabel" name="_lbl_skills">
+     <item row="0" column="2">
+      <widget class="QPushButton" name="btn_proficient_skill">
        <property name="text">
-        <string>Skills:</string>
+        <string>Proficient</string>
        </property>
       </widget>
      </item>
-     <item row="7" column="1">
-      <layout class="QHBoxLayout" name="hl_skills">
-       <item>
-        <widget class="QComboBox" name="cb_skills"/>
-       </item>
-       <item>
-        <widget class="QPushButton" name="btn_skills_proficient">
-         <property name="text">
-          <string>Proficient</string>
-         </property>
-        </widget>
-       </item>
-       <item>
-        <widget class="QPushButton" name="btn_skills_expert">
-         <property name="text">
-          <string>Expert</string>
-         </property>
-        </widget>
-       </item>
-      </layout>
-     </item>
-     <item row="8" column="0">
-      <widget class="QLabel" name="_lbl_condition_immunities">
-       <property name="text">
-        <string>Condition Immunities:</string>
-       </property>
-      </widget>
-     </item>
-     <item row="8" column="1">
-      <layout class="QHBoxLayout" name="hl_conditions">
-       <item>
-        <widget class="QComboBox" name="cb_conditions"/>
-       </item>
-       <item>
-        <widget class="QPushButton" name="btn_condition_immune">
-         <property name="text">
-          <string>Immune</string>
-         </property>
-        </widget>
-       </item>
-      </layout>
-     </item>
-     <item row="9" column="0">
-      <widget class="QLabel" name="_lbl_encounter_difficulty">
-       <property name="text">
-        <string>Encounter Difficulty:</string>
-       </property>
-      </widget>
-     </item>
-     <item row="9" column="1">
-      <widget class="QComboBox" name="cb_encounter_difficulty"/>
-     </item>
-     <item row="10" column="0">
-      <widget class="QLabel" name="_lbl_encounter_size">
-       <property name="text">
-        <string>Encounter Size:</string>
-       </property>
-      </widget>
-     </item>
-     <item row="10" column="1">
-      <widget class="QComboBox" name="cb_encounter_size"/>
-     </item>
-     <item row="11" column="0">
+     <item row="3" column="0">
       <widget class="QLabel" name="_lbl_languages">
        <property name="text">
         <string>Languages:</string>
        </property>
       </widget>
      </item>
-     <item row="11" column="1">
-      <layout class="QHBoxLayout" name="hl_languages">
-       <item>
-        <widget class="QComboBox" name="cb_languages"/>
-       </item>
-       <item>
-        <widget class="QPushButton" name="btn_add_language">
-         <property name="text">
-          <string>Add</string>
-         </property>
-        </widget>
-       </item>
-       <item>
-        <widget class="QPushButton" name="btn_remove_language">
-         <property name="text">
-          <string>Remove</string>
-         </property>
-        </widget>
-       </item>
-      </layout>
+     <item row="0" column="4">
+      <widget class="QListWidget" name="listview_skills"/>
      </item>
-     <item row="12" column="0">
+     <item row="0" column="5">
+      <widget class="QPushButton" name="btn_remove_skill">
+       <property name="text">
+        <string>Remove</string>
+       </property>
+      </widget>
+     </item>
+     <item row="2" column="1">
+      <widget class="QComboBox" name="cb_conditions"/>
+     </item>
+     <item row="1" column="1">
+      <widget class="QComboBox" name="cb_damage"/>
+     </item>
+     <item row="3" column="3">
+      <widget class="QPushButton" name="btn_speaks_language">
+       <property name="text">
+        <string>Speaks</string>
+       </property>
+      </widget>
+     </item>
+     <item row="3" column="2">
+      <widget class="QPushButton" name="btn_understands_language">
+       <property name="text">
+        <string>Understands</string>
+       </property>
+      </widget>
+     </item>
+     <item row="1" column="4">
+      <widget class="QListWidget" name="listview_damage"/>
+     </item>
+     <item row="3" column="5">
+      <widget class="QPushButton" name="btn_remove_language">
+       <property name="text">
+        <string>Remove</string>
+       </property>
+      </widget>
+     </item>
+     <item row="2" column="4">
+      <widget class="QListView" name="listview_conditions"/>
+     </item>
+     <item row="0" column="3">
+      <widget class="QPushButton" name="btn_expert_skill">
+       <property name="text">
+        <string>Expert</string>
+       </property>
+      </widget>
+     </item>
+     <item row="2" column="0">
+      <widget class="QLabel" name="_lbl_conditions">
+       <property name="text">
+        <string>Conditions:</string>
+       </property>
+      </widget>
+     </item>
+     <item row="0" column="0">
+      <widget class="QLabel" name="_lbl_skills">
+       <property name="text">
+        <string>Skills:</string>
+       </property>
+      </widget>
+     </item>
+     <item row="3" column="1">
+      <widget class="QComboBox" name="cb_languages"/>
+     </item>
+     <item row="1" column="3">
+      <widget class="QPushButton" name="btn_immune_damage">
+       <property name="text">
+        <string>Immune</string>
+       </property>
+      </widget>
+     </item>
+     <item row="2" column="2">
+      <widget class="QPushButton" name="btn_immune_condition">
+       <property name="text">
+        <string>Immune</string>
+       </property>
+      </widget>
+     </item>
+     <item row="3" column="4">
+      <widget class="QListView" name="listview_languages"/>
+     </item>
+     <item row="4" column="0">
       <widget class="QLabel" name="_lbl_telepathy">
        <property name="text">
         <string>Telepathy:</string>
        </property>
       </widget>
      </item>
-     <item row="12" column="1">
-      <layout class="QHBoxLayout" name="hl_telepathy">
-       <item>
-        <widget class="QCheckBox" name="checkbox_telepathy">
-         <property name="text">
-          <string/>
-         </property>
-        </widget>
-       </item>
-       <item>
-        <widget class="QLabel" name="_lbl_telepathy_range">
-         <property name="text">
-          <string>Range:</string>
-         </property>
-        </widget>
-       </item>
-       <item>
-        <widget class="QLineEdit" name="lineedit_telepathy_range"/>
-       </item>
-       <item>
-        <widget class="QLabel" name="_lbl_telepathy_ft">
-         <property name="text">
-          <string>ft.</string>
-         </property>
-        </widget>
-       </item>
-      </layout>
+     <item row="4" column="1">
+      <widget class="QCheckBox" name="checkbox_telepathy">
+       <property name="text">
+        <string/>
+       </property>
+      </widget>
+     </item>
+     <item row="4" column="2">
+      <widget class="QLabel" name="_lbl_range">
+       <property name="text">
+        <string>Range:</string>
+       </property>
+      </widget>
+     </item>
+     <item row="4" column="3">
+      <widget class="QLineEdit" name="lineedit_telepathy_range"/>
+     </item>
+     <item row="4" column="4">
+      <widget class="QLabel" name="_lbl_ft">
+       <property name="text">
+        <string>ft.</string>
+       </property>
+      </widget>
+     </item>
+    </layout>
+   </item>
+   <item>
+    <widget class="Line" name="_hl_4">
+     <property name="orientation">
+      <enum>Qt::Horizontal</enum>
+     </property>
+    </widget>
+   </item>
+   <item>
+    <widget class="QLabel" name="_lbl_encounter_details_title">
+     <property name="font">
+      <font>
+       <weight>75</weight>
+       <bold>true</bold>
+      </font>
+     </property>
+     <property name="text">
+      <string>Encounter Details:</string>
+     </property>
+     <property name="alignment">
+      <set>Qt::AlignCenter</set>
+     </property>
+    </widget>
+   </item>
+   <item>
+    <layout class="QGridLayout" name="gl_encounter_details">
+     <item row="0" column="1">
+      <widget class="QComboBox" name="cb_encounter_size"/>
+     </item>
+     <item row="1" column="0">
+      <widget class="QLabel" name="_lbl_encounter_difficulty">
+       <property name="text">
+        <string>Encounter Difficulty:</string>
+       </property>
+      </widget>
+     </item>
+     <item row="2" column="1">
+      <widget class="QSpinBox" name="spinbox_avg_party_lvl"/>
+     </item>
+     <item row="2" column="0">
+      <widget class="QLabel" name="_lbl_avg_party_lvl">
+       <property name="text">
+        <string>Average Party Level:</string>
+       </property>
+      </widget>
+     </item>
+     <item row="1" column="1">
+      <widget class="QComboBox" name="cb_encounter_difficulty"/>
+     </item>
+     <item row="0" column="0">
+      <widget class="QLabel" name="_lbl_encounter_size">
+       <property name="text">
+        <string>Encounter Size:</string>
+       </property>
+      </widget>
+     </item>
+     <item row="3" column="0">
+      <widget class="QLabel" name="_lbl_num_pcs">
+       <property name="text">
+        <string>Number of Player Characters:</string>
+       </property>
+      </widget>
+     </item>
+     <item row="3" column="1">
+      <widget class="QSpinBox" name="spinbox_num_pcs"/>
      </item>
     </layout>
    </item>

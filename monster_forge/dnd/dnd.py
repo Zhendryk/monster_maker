@@ -2,7 +2,7 @@ from __future__ import annotations
 import math
 from random import randint
 from enum import Enum, auto
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 from collections.abc import Sequence
 from functools import cached_property
 
@@ -219,6 +219,13 @@ class Size(Enum):
                 return s
         raise ValueError(f"Invalid size: {size_name}")
 
+    @staticmethod
+    def from_display_name(name: str) -> Size:
+        for s in Size:
+            if s.name.lower() == "_".join([c for c in name.split(" ")]).lower():
+                return s
+        raise ValueError(f"invalid Size: {name}")
+
     @property
     def hit_die(self) -> Die:
         match self:
@@ -345,7 +352,7 @@ CR_EXPERIENCE_POINTS: dict[int | float, int] = {
 
 
 @dataclass
-class ChallengeRating(Enum):
+class ChallengeRating:
 
     rating: int | float
 
@@ -373,32 +380,33 @@ class ChallengeRating(Enum):
     def experience_points(self) -> int:
         return CR_EXPERIENCE_POINTS[self.rating]
 
-    def calculate_encounter_cr(
-        self,
-        avg_party_level: int,
-        num_players: int,
-        difficulty: EncounterDifficulty,
-        size: EncounterSize,
-    ) -> ChallengeRating:
-        total_xp_budget = difficulty.experience_points_budget(
-            avg_party_level, num_players=num_players
-        )
-        xp_per_creature = total_xp_budget / size.num_creatures
-
 
 @dataclass
 class Encounter:
-    player_levels: Sequence[int]
-    difficulty: EncounterDifficulty
     size: EncounterSize
+    difficulty: EncounterDifficulty
+    num_pcs: int | None = field(default=None)
+    avg_party_level: int | None = field(default=None)
+    player_levels: Sequence[int] = field(default_factory=list)
+
+    def __post_init__(self) -> None:
+        if not self.player_levels:
+            assert self.num_pcs is not None
+            assert self.avg_party_level is not None
+        else:
+            assert self.player_levels is not None
 
     @cached_property
-    def avg_party_level(self) -> int:
-        return math.floor(sum(self.player_levels) / self.num_players)
+    def calced_avg_party_level(self) -> int:
+        if self.player_levels:
+            return math.floor(sum(self.player_levels) / self.num_players)
+        return self.avg_party_level
 
     @cached_property
-    def num_players(self) -> int:
-        return len(self.player_levels)
+    def calced_num_players(self) -> int:
+        if self.player_levels:
+            return len(self.player_levels)
+        return self.num_pcs
 
     @cached_property
     def num_monsters(self) -> int:
@@ -407,7 +415,7 @@ class Encounter:
     @cached_property
     def monster_cr(self) -> int | float:
         total_xp_budget = self.difficulty.experience_points_budget(
-            self.avg_party_level, num_players=self.num_players
+            self.calced_avg_party_level, num_players=self.calced_num_players
         )
         xp_per_monster = total_xp_budget / self.num_monsters
         distances = [
@@ -441,6 +449,20 @@ class MonsterType(Enum):
     def display_name(self) -> str:
         return " ".join([token.capitalize() for token in self.name.split("_")])
 
+    @staticmethod
+    def from_name(name: str) -> MonsterType:
+        for mt in MonsterType:
+            if name.lower() == mt.name.lower():
+                return mt
+        raise ValueError(f"Invalid monster type: {name}")
+
+    @staticmethod
+    def from_display_name(name: str) -> MonsterType:
+        for mt in MonsterType:
+            if mt.name.lower() == "_".join([c for c in name.split(" ")]).lower():
+                return mt
+        raise ValueError(f"invalid MonsterType: {name}")
+
 
 class Alignment(Enum):
     UNALIGNED = auto()
@@ -461,6 +483,13 @@ class Alignment(Enum):
                 return a
         raise ValueError(f"Invalid alignment: {alignment_name}")
 
+    @staticmethod
+    def from_display_name(name: str) -> Alignment:
+        for a in Alignment:
+            if a.name.lower() == "_".join([c for c in name.split(" ")]).lower():
+                return a
+        raise ValueError(f"invalid Alignment: {name}")
+
     @property
     def display_name(self) -> str:
         return " ".join([token.capitalize() for token in self.name.split("_")])
@@ -479,13 +508,17 @@ class EncounterSize(Enum):
             case EncounterSize.SINGLETON:
                 return 1
             case EncounterSize.SMALL:
-                return randint(2, 4)
+                # return randint(2, 4)
+                return 3
             case EncounterSize.MEDIUM:
-                return randint(5, 8)
+                # return randint(5, 8)
+                return 6
             case EncounterSize.LARGE:
-                return randint(9, 12)
+                # return randint(9, 12)
+                return 10
             case EncounterSize.SWARM:
-                return randint(13, 20)
+                # return randint(13, 20)
+                return 15
             case _:
                 raise NotImplementedError
 
@@ -495,6 +528,13 @@ class EncounterSize(Enum):
             if es.name.lower() == size_name.lower():
                 return es
         raise ValueError(f"invalid EncounterSize: {size_name}")
+
+    @staticmethod
+    def from_display_name(name: str) -> EncounterSize:
+        for es in EncounterSize:
+            if es.name.lower() == "_".join([c for c in name.split(" ")]).lower():
+                return es
+        raise ValueError(f"invalid EncounterSize: {name}")
 
     @property
     def display_name(self) -> str:
@@ -514,11 +554,18 @@ class EncounterDifficulty(Enum):
         return total_xp_budget_for_encounter
 
     @staticmethod
-    def from_name(difficulty_name: str) -> EncounterDifficulty:
+    def from_name(name: str) -> EncounterDifficulty:
         for ed in EncounterDifficulty:
-            if ed.name.lower() == difficulty_name.lower():
+            if ed.name.lower() == name.lower():
                 return ed
-        raise ValueError(f"invalid EncounterDifficulty: {difficulty_name}")
+        raise ValueError(f"invalid EncounterDifficulty: {name}")
+
+    @staticmethod
+    def from_display_name(name: str) -> EncounterDifficulty:
+        for ed in EncounterDifficulty:
+            if ed.name.lower() == "_".join([c for c in name.split(" ")]).lower():
+                return ed
+        raise ValueError(f"invalid EncounterDifficulty: {name}")
 
     @property
     def display_name(self) -> str:
