@@ -24,9 +24,11 @@ from monster_forge.dnd.dnd import (
     Resistance,
     AbilityScores,
     Ability,
+    SpeedType,
 )
 from pathlib import Path
 from functools import partial
+from random import randint
 
 # A demon who disguises itself amongst the cultural and financial elite, attending soirees and other lavish events. It lures in its victims with its impeccable charm and decorum.
 
@@ -109,6 +111,10 @@ class MonsterCreationController(QWidget):
         self._view.btn_remove_condition.clicked.connect(self._remove_condition_immunity)
         self._view.checkbox_ac_cr_tie.clicked.connect(self._toggle_ac_cr_tie)
         self._view.checkbox_hp_cr_tie.clicked.connect(self._toggle_hp_cr_tie)
+        self._view.btn_suggest_ability_scores.clicked.connect(
+            self._suggest_ability_scores
+        )
+        self._view.btn_generate_all.clicked.connect(self._generate_all)
 
     def _toggle_ac_cr_tie(self, tie_ac_to_cr: bool) -> None:
         if tie_ac_to_cr:
@@ -170,6 +176,23 @@ class MonsterCreationController(QWidget):
                         )
                     )
 
+    def _generate_all(self) -> None:
+        if not self.current_description:
+            print("Can't generate monster without a description. Aborting...")
+            return
+        if not self.current_name:
+            self._suggest_monster_names()
+        self._suggest_creature_type()
+        self._suggest_alignment()
+        self._suggest_size()
+        self._suggest_ability_scores()
+        self._generate_artwork()
+        # self._suggest_skill_proficiencies()
+        # self._suggest_damage_resistances()
+        # self._suggest_condition_immunities()
+        # self._suggest_languages()
+        # self._suggest_speed()
+
     def _refine_description(self) -> None:
         print("Refining monster concept...")
         if not self.current_description:
@@ -180,8 +203,9 @@ class MonsterCreationController(QWidget):
 
     def _suggest_monster_names(self) -> None:
         print("Suggesting names...")
-        suggested_names = self._mm.suggest_names(self.current_monster_concept)
-        self._view.lineedit_name.setText(", ".join(suggested_names))
+        suggested_names = self._mm.suggest_names(self.current_description)
+        name = suggested_names[randint(0, len(suggested_names) - 1)].strip(", ")
+        self._view.lineedit_name.setText(name)
 
     def _suggest_creature_type(self) -> None:
         if self.current_name is None:
@@ -238,7 +262,7 @@ class MonsterCreationController(QWidget):
             return
         print("Suggesting size...")
         suggested_size_txt = self._mm._openai_agent.generate_text(
-            f"Given the provided D&D monster name and description, suggest an appropriate size for it. Your response must be one of the following sizes and nothing else: {', '.join([s.display_name for s in Size])}. The name of the monster is: {self.current_name}. The description of the monster is: {self.current_description}"
+            f"Given the provided D&D 5E 2024 monster name and description, suggest an appropriate size for it. Your response must be one of the following sizes and nothing else: {', '.join([s.display_name for s in Size])}. The name of the monster is: {self.current_name}. The description of the monster is: {self.current_description}"
         )
         suggested_size = Size.from_display_name(suggested_size_txt)
         print(f"Suggested Size is: {suggested_size.display_name}")
@@ -250,6 +274,35 @@ class MonsterCreationController(QWidget):
             )
         )
         self._view.cb_size.setCurrentIndex(suggestion_idx)
+
+    def _suggest_ability_scores(self) -> None:
+        if not self.current_name:
+            print("Monster name required to generate ability scores.")
+            return
+        if not self.current_description:
+            print("Monster description required to generate ability scores.")
+            return
+        if not self.current_challenge_rating:
+            print("Monster challenge rating required to generate ability scores")
+            return
+        # TODO: Do regex
+        suggested_scores_txt = self._mm._openai_agent.generate_text(
+            f"Given the provided D&D 5E 2024 monster name, description and challenge rating, suggest a set of ability scores for it. Your response must include key-value pairs of the form SCORE_NAME:SCORE_VALUE where SCORE_NAME is Strength,Dexterity,Constitution,Intelligence,Wisdom or Charisma, and SCORE_VALUE is any number 0-30. You must generate one key-value pair for each SCORE_NAME, and no other text whatsoever. The monster's name is: {self.current_name}. The Monster's Challenge Rating is: {self.current_challenge_rating.rating}. The Monster's description is: {self.current_description}."
+        )
+        suggested_score_lines = [
+            sl.replace(" ", "") for sl in suggested_scores_txt.split("\n")
+        ]
+        suggested_scores = {
+            Ability.from_display_name(sl.split(":")[0]): int(sl.split(":")[1])
+            for sl in suggested_score_lines
+        }
+        ab_sc = AbilityScores(suggested_scores)
+        self._view.spinbox_str.setValue(ab_sc.scores[Ability.STRENGTH])
+        self._view.spinbox_dex.setValue(ab_sc.scores[Ability.DEXTERITY])
+        self._view.spinbox_con.setValue(ab_sc.scores[Ability.CONSTITUTION])
+        self._view.spinbox_int.setValue(ab_sc.scores[Ability.INTELLIGENCE])
+        self._view.spinbox_wis.setValue(ab_sc.scores[Ability.WISDOM])
+        self._view.spinbox_cha.setValue(ab_sc.scores[Ability.CHARISMA])
 
     def _add_skill(self, proficiency_level: Proficiency) -> None:
         skill_text = self._view.cb_skills.currentText()
@@ -576,15 +629,11 @@ class MonsterCreationController(QWidget):
 
     @property
     def current_ac(self) -> int:
-        return 10  # TODO: Implement me
+        return self._view.spinbox_ac.value()
 
     @property
     def current_hp(self) -> str:
-        return "100 (5d20 + 0)"  # TODO: Implement me
-
-    @property
-    def current_speed(self) -> str:
-        return "30 ft."  # TODO: Implement me
+        return self._view.lineedit_hp.text()
 
     @property
     def current_ability_scores(self) -> AbilityScores:
@@ -600,6 +649,16 @@ class MonsterCreationController(QWidget):
         )
 
     @property
+    def current_speed(self) -> dict[SpeedType, int]:
+        return {
+            SpeedType.WALKING: self._view.spinbox_walk_speed.value(),
+            SpeedType.SWIM: self._view.spinbox_swim_speed.value(),
+            SpeedType.CLIMB: self._view.spinbox_climb_speed.value(),
+            SpeedType.BURROW: self._view.spinbox_burrow_speed.value(),
+            SpeedType.FLY: self._view.spinbox_fly_speed.value(),
+        }
+
+    @property
     def current_initiative(self) -> str:
         return (
             f"+{self.dex_mod} ({self.dex})"
@@ -609,11 +668,56 @@ class MonsterCreationController(QWidget):
 
     @property
     def skills_display(self) -> str:
-        return ""  # TODO: Implement me
+        if self.current_challenge_rating is None:
+            return ""
+        retval = []
+        ab_sc = self.current_ability_scores
+        for skill, proficiency in sorted(
+            self.current_skill_proficiencies, key=lambda x: x[0].display_name
+        ):
+            skill_mod = ab_sc._calculate_modifier(
+                ab_sc.scores[skill.associated_ability]
+            )
+            pb = self.current_challenge_rating.proficiency_bonus
+            match proficiency:
+                case Proficiency.NORMAL:
+                    total_bonus = skill_mod
+                case Proficiency.PROFICIENT:
+                    total_bonus = skill_mod + pb
+                case Proficiency.EXPERTISE:
+                    total_bonus = skill_mod + (2 * pb)
+                case _:
+                    raise NotImplementedError
+            retval.append(f"{skill.display_name} +{total_bonus}")
+        return ", ".join(retval)
 
     @property
     def resistances_display(self) -> str:
-        return ""  # TODO: Implement me
+        dmg_resistances = sorted(
+            [
+                dr[0].display_name
+                for dr in self.current_damage_resistances
+                if dr[1] == Resistance.RESISTANT
+            ],
+            key=lambda x: x[0].display_name,
+        )
+        return ", ".join(dmg_resistances)
+
+    @property
+    def immunities_display(self) -> str:
+        dmg_immunities = sorted(
+            [
+                dr[0].display_name
+                for dr in self.current_damage_resistances
+                if dr[1] == Resistance.IMMUNE
+            ],
+            key=lambda x: x[0].display_name,
+        )
+        condition_immunities = sorted(
+            [ci[0].display_name for ci in self.current_condition_immunities],
+            key=lambda x: x[0].display_name,
+        )
+        return ", ".join(dmg_immunities) + "; " + ", ".join(condition_immunities)
 
     @property
     def senses_display(self) -> str:
@@ -712,8 +816,8 @@ class MonsterCreationController(QWidget):
             "{{stats\n"
             "\n"
             "{{vitals\n"
-            f"**AC** :: {self.current_challenge_rating.armor_class}\n"
-            f"**HP** :: {self.current_challenge_rating.hit_points(self.current_ability_scores, self.current_size)}\n"
+            f"**AC** :: {self.current_ac}\n"
+            f"**HP** :: {self.current_hp}\n"
             f"**Speed** :: {self.current_speed}\n"
             "\column\n"
             f"**Initiative** :: {self.current_initiative}\n"

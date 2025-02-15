@@ -113,9 +113,9 @@ class MonsterMaker:
         print(f"Monster concept refined: {refined_concept}")
         return refined_concept
 
-    def suggest_names(self, monster_concept: str) -> Sequence[str]:
+    def suggest_names(self, monster_concept: str, num_names: int = 1) -> Sequence[str]:
         csv_suggested_names = self._openai_agent.generate_text(
-            f"Please suggest 10 unique, diverse and interesting names for a D&D 5E 2024 monster based on the following concept: {monster_concept}. These names should evoke thoughts and feelings related to the concept of the monster. Some should be simple names and others more complicated. Your response must simply be the 10 suggestions, formatted as a comma separated list of the names with no other text whatsoever."
+            f"Please suggest {num_names} unique, diverse and interesting names for a D&D 5E 2024 monster based on the following concept: {monster_concept}. These names should evoke thoughts and feelings related to the concept of the monster. Some should be simple names and others more complicated. Your response must simply be the {num_names} suggestions, formatted as a comma separated list of the names with no other text whatsoever."
         )
         suggested_names = csv_suggested_names.split(", ")
         return [

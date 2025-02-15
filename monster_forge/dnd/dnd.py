@@ -172,6 +172,22 @@ class Skill(Enum):
                 return s
         raise ValueError(f"invalid Skill: {name}")
 
+    @property
+    def associated_ability(self) -> Ability:
+        match self:
+            case Skill.ATHLETICS:
+                return Ability.STRENGTH
+            case Skill.ACROBATICS | Skill.SLEIGHT_OF_HAND | Skill.STEALTH:
+                return Ability.DEXTERITY
+            case Skill.ARCANA | Skill.HISTORY | Skill.INVESTIGATION | Skill.NATURE | Skill.RELIGION:
+                return Ability.INTELLIGENCE
+            case Skill.ANIMAL_HANDLING | Skill.INSIGHT | Skill.MEDICINE | Skill.PERCEPTION | Skill.SURVIVAL:
+                return Ability.WISDOM
+            case Skill.DECEPTION | Skill.INTIMIDATION | Skill.PERFORMANCE | Skill.PERSUASION:
+                return Ability.CHARISMA
+            case _:
+                raise NotImplementedError
+
 
 class SpeedType(Enum):
     WALKING = auto()
