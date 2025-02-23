@@ -72,9 +72,9 @@ class MonsterCreationController(QWidget):
         for l in Language:
             language_items.append(l.display_name)
             if l.plus_amt > 0:
-                language_items.extend(
-                    [l.display_name_plus_x(i) for i in range(l.plus_amt, 1)]
-                )
+                items_to_Add = [l.display_name_plus_x(i) for i in range(1, l.plus_amt)]
+                language_items.extend(items_to_Add)
+        language_items.append("All")
         self._view.cb_languages.addItems(sorted(language_items))
         self._view.cb_languages.setCurrentIndex(-1)
         self._view.cb_size.addItems(sorted([s.display_name for s in Size]))
@@ -107,10 +107,7 @@ class MonsterCreationController(QWidget):
             partial(self._add_damage, Resistance.IMMUNE)
         )
         self._view.btn_damage_remove.clicked.connect(self._remove_damage)
-        self._view.btn_languages_add.clicked.connect(
-            partial(self._add_language, LanguageProficiency.UNDERSTANDS)
-        )
-        self._view.btn_languages_all.clicked.connect(self._add_all_languages)
+        self._view.btn_languages_add.clicked.connect(self._add_language)
         self._view.btn_languages_remove.clicked.connect(self._remove_language)
         self._view.btn_conditions_immune.clicked.connect(self._add_condition_immunity)
         self._view.btn_conditions_remove.clicked.connect(
@@ -124,6 +121,8 @@ class MonsterCreationController(QWidget):
         self._view.btn_suggest_all.clicked.connect(self._generate_all)
         self._view.btn_generate_markdown.clicked.connect(self.generate_markdown_file)
         self._view.checkbox_telepathy.clicked.connect(self._telepathy_toggled)
+        self._view.btn_import.clicked.connect(self._import_monster)
+        self._view.btn_export.clicked.connect(self._export_monster)
 
     def _telepathy_toggled(self, enabled: bool) -> None:
         self._view.spinbox_telepathy_range.setEnabled(enabled)
@@ -187,6 +186,12 @@ class MonsterCreationController(QWidget):
                             self.current_ability_scores, self.current_size
                         )
                     )
+
+    def _import_monster(self) -> None:
+        pass  # TODO: Implement me
+
+    def _export_monster(self) -> None:
+        pass  # TODO: Implement me
 
     def _generate_all(self) -> None:
         if not self.current_description:
@@ -426,7 +431,7 @@ class MonsterCreationController(QWidget):
             return
         self._view.listwidget_skills.takeItem(idx_to_remove)
 
-    def _add_language(self, proficiency_level: LanguageProficiency) -> None:
+    def _add_language(self) -> None:
         lang_text = self._view.cb_languages.currentText()
         language = Language.from_display_name(lang_text)
         if any(
@@ -437,16 +442,9 @@ class MonsterCreationController(QWidget):
                 for i in range(self._view.listwidget_languages.count())
             )
         ):
-            print(
-                f'"{language.display_name} ({proficiency_level.display_name})" already exists, not adding duplicate...'
-            )
+            print(f'"{language.display_name}" already exists, not adding duplicate...')
             return
-        self._view.listwidget_languages.addItem(
-            f"{language.display_name} ({proficiency_level.display_name})"
-        )
-
-    def _add_all_languages(self) -> None:
-        pass
+        self._view.listwidget_languages.addItem(language.display_name)
 
     def _remove_language(self) -> None:
         lang_text = self._view.cb_languages.currentText()
@@ -995,3 +993,6 @@ class MonsterCreationController(QWidget):
             markdown_txt = self._generate_homebrewery_v3_markdown(wide=wide_statblock)
             markdown_file.write(markdown_txt)
         print(f"File write complete: {output_path}")
+
+
+# TODO: Traits, Actions, Bonus Actions, Reactions, Legendary Actions, toggle for "has lair", etc.

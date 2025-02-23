@@ -14,7 +14,7 @@ from PyQt5 import QtCore, QtGui, QtWidgets
 class Ui_CreateMonsterView(object):
     def setupUi(self, CreateMonsterView):
         CreateMonsterView.setObjectName("CreateMonsterView")
-        CreateMonsterView.resize(625, 658)
+        CreateMonsterView.resize(625, 687)
         self.verticalLayout = QtWidgets.QVBoxLayout(CreateMonsterView)
         self.verticalLayout.setObjectName("verticalLayout")
         self._lbl_title = QtWidgets.QLabel(CreateMonsterView)
@@ -333,9 +333,6 @@ class Ui_CreateMonsterView(object):
         self.cb_damage = QtWidgets.QComboBox(self.tab_senses_languages_immunities)
         self.cb_damage.setObjectName("cb_damage")
         self.gridLayout_5.addWidget(self.cb_damage, 1, 1, 1, 1)
-        self.btn_languages_all = QtWidgets.QPushButton(self.tab_senses_languages_immunities)
-        self.btn_languages_all.setObjectName("btn_languages_all")
-        self.gridLayout_5.addWidget(self.btn_languages_all, 4, 3, 1, 1)
         self.listwidget_languages = QtWidgets.QListWidget(self.tab_senses_languages_immunities)
         self.listwidget_languages.setMaximumSize(QtCore.QSize(16777215, 100))
         self.listwidget_languages.setObjectName("listwidget_languages")
@@ -507,7 +504,6 @@ class Ui_CreateMonsterView(object):
         self.btn_skills_proficient.setText(_translate("CreateMonsterView", "Proficient"))
         self.btn_languages_add.setText(_translate("CreateMonsterView", "Add"))
         self.btn_conditions_remove.setText(_translate("CreateMonsterView", "Remove"))
-        self.btn_languages_all.setText(_translate("CreateMonsterView", "All"))
         self._lbl_damage.setText(_translate("CreateMonsterView", "Damage:"))
         self.btn_damage_immune.setText(_translate("CreateMonsterView", "Immune"))
         self.btn_damage_remove.setText(_translate("CreateMonsterView", "Remove"))
