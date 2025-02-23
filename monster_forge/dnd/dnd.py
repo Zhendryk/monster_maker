@@ -424,13 +424,31 @@ class Language(Enum):
                 return True
             case _:
                 return False
+    
+    @property
+    def plus_amt(self) -> int:
+        match self:
+            case Language.COMMON:
+                return 5
+            case _:
+                return 0
 
     @property
     def display_name(self) -> str:
         return " ".join([token.capitalize() for token in self.name.split("_")])
 
+    def display_name_plus_x(self, x: int) -> str:
+        if x > 5 or x < 1:
+            raise ValueError
+        num_words_dict = {1: "one", 2: "two", 3: "three", 4: "four", 5: "five"}
+        return f"{self.display_name} plus {num_words_dict[x]} other language{'s' if x > 1 else ''}"
+
     @classmethod
     def from_display_name(cls, name: str) -> Language:
+        if "plus" in name.lower():
+            return next(
+                (x for x in cls if f"{x.display_name.lower()} plus" in name.lower())
+            )
         for x in cls:
             if x.name.lower() == "_".join([token for token in name.split(" ")]).lower():
                 return x
@@ -558,6 +576,8 @@ class ChallengeRating:
     def display(self) -> str:
         if isinstance(self.rating, float):
             numerator, denominator = self.rating.as_integer_ratio()
+            if denominator == 1:
+                return f"{numerator} (XP {self.experience_points}; PB +{self.proficiency_bonus})"
             return f"{numerator}/{denominator} (XP {self.experience_points}; PB +{self.proficiency_bonus})"
         else:
             return f"{self.rating} (XP {self.experience_points}; PB +{self.proficiency_bonus})"

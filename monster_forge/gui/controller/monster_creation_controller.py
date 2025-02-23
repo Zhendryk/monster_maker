@@ -3,9 +3,7 @@ from PyQt5.QtGui import QPixmap
 from collections.abc import Sequence
 from PyQt5.QtCore import QObject, Qt
 import re
-from monster_forge.gui.view.monster_creation_view import (
-    Ui_MonsterCreationView,
-)
+from monster_forge.gui.view.create_monster_view import Ui_CreateMonsterView
 from monster_forge.monster_maker import MonsterMaker
 from monster_forge.dnd.dnd import (
     Alignment,
@@ -32,21 +30,22 @@ from random import randint
 
 # A demon who disguises itself amongst the cultural and financial elite, attending soirees and other lavish events. It lures in its victims with its impeccable charm and decorum.
 
+# A demon who blends into the higher eschelons of society to hunt its prey. It regularly attends soirees and other elegant events to lure victims in with its charming personality and impeccable decorum.
+
 
 class MonsterCreationController(QWidget):
     def __init__(self, *, parent: QObject | None = None) -> None:
         super().__init__(parent=parent)
-        self._view = Ui_MonsterCreationView()
+        self._view = Ui_CreateMonsterView()
         self._view.setupUi(self)
         self._mm = MonsterMaker()
         self._setup_UI()
 
     def _setup_UI(self) -> None:
         self.setWindowTitle("Create New Monster")
-        self._view.progressbar_main.setVisible(False)
-        self._view.progressbar_generate_all.setVisible(False)
+        self._view.progressbar_ai_query.setVisible(False)
         self._view.btn_refine_description.clicked.connect(self._refine_description)
-        self._view.btn_suggest_names.clicked.connect(self._suggest_monster_names)
+        self._view.btn_suggest_name.clicked.connect(self._suggest_monster_names)
         self._view.cb_skills.addItems(sorted([s.display_name for s in Skill]))
         self._view.cb_skills.setCurrentIndex(-1)
         self._view.cb_alignment.addItems(
@@ -69,16 +68,24 @@ class MonsterCreationController(QWidget):
             sorted([mt.display_name for mt in MonsterType])
         )
         self._view.cb_creature_type.setCurrentIndex(-1)
-        self._view.cb_languages.addItems(sorted([l.display_name for l in Language]))
+        language_items = []
+        for l in Language:
+            language_items.append(l.display_name)
+            if l.plus_amt > 0:
+                language_items.extend(
+                    [l.display_name_plus_x(i) for i in range(l.plus_amt, 1)]
+                )
+        self._view.cb_languages.addItems(sorted(language_items))
         self._view.cb_languages.setCurrentIndex(-1)
         self._view.cb_size.addItems(sorted([s.display_name for s in Size]))
         self._view.cb_size.setCurrentIndex(-1)
+        self._view.cb_size.currentIndexChanged.connect(self._calc_cr)
         self._view.cb_damage.addItems(sorted([d.display_name for d in DamageType]))
         self._view.cb_damage.setCurrentIndex(-1)
         self._view.lineedit_challenge_rating.setEnabled(False)
         self._view.cb_encounter_size.currentIndexChanged.connect(self._calc_cr)
         self._view.cb_encounter_difficulty.currentIndexChanged.connect(self._calc_cr)
-        self._view.spinbox_avg_party_lvl.valueChanged.connect(self._calc_cr)
+        self._view.spinbox_avg_party_level.valueChanged.connect(self._calc_cr)
         self._view.spinbox_num_pcs.valueChanged.connect(self._calc_cr)
         self._view.btn_generate_artwork.clicked.connect(self._generate_artwork)
         self._view.btn_suggest_creature_type.clicked.connect(
@@ -86,35 +93,40 @@ class MonsterCreationController(QWidget):
         )
         self._view.btn_suggest_alignment.clicked.connect(self._suggest_alignment)
         self._view.btn_suggest_size.clicked.connect(self._suggest_size)
-        self._view.btn_proficient_skill.clicked.connect(
+        self._view.btn_skills_proficient.clicked.connect(
             partial(self._add_skill, Proficiency.PROFICIENT)
         )
-        self._view.btn_expert_skill.clicked.connect(
+        self._view.btn_skills_expert.clicked.connect(
             partial(self._add_skill, Proficiency.EXPERTISE)
         )
-        self._view.btn_remove_skill.clicked.connect(self._remove_skill)
-        self._view.btn_resistant_damage.clicked.connect(
+        self._view.btn_skills_remove.clicked.connect(self._remove_skill)
+        self._view.btn_damage_resistant.clicked.connect(
             partial(self._add_damage, Resistance.RESISTANT)
         )
-        self._view.btn_immune_damage.clicked.connect(
+        self._view.btn_damage_immune.clicked.connect(
             partial(self._add_damage, Resistance.IMMUNE)
         )
-        self._view.btn_remove_damage.clicked.connect(self._remove_damage)
-        self._view.btn_understands_language.clicked.connect(
+        self._view.btn_damage_remove.clicked.connect(self._remove_damage)
+        self._view.btn_languages_add.clicked.connect(
             partial(self._add_language, LanguageProficiency.UNDERSTANDS)
         )
-        self._view.btn_speaks_language.clicked.connect(
-            partial(self._add_language, LanguageProficiency.SPEAKS)
+        self._view.btn_languages_all.clicked.connect(self._add_all_languages)
+        self._view.btn_languages_remove.clicked.connect(self._remove_language)
+        self._view.btn_conditions_immune.clicked.connect(self._add_condition_immunity)
+        self._view.btn_conditions_remove.clicked.connect(
+            self._remove_condition_immunity
         )
-        self._view.btn_remove_language.clicked.connect(self._remove_language)
-        self._view.btn_immune_condition.clicked.connect(self._add_condition_immunity)
-        self._view.btn_remove_condition.clicked.connect(self._remove_condition_immunity)
-        self._view.checkbox_ac_cr_tie.clicked.connect(self._toggle_ac_cr_tie)
-        self._view.checkbox_hp_cr_tie.clicked.connect(self._toggle_hp_cr_tie)
+        self._view.checkbox_tie_ac_to_cr.clicked.connect(self._toggle_ac_cr_tie)
+        self._view.checkbox_tie_hp_to_cr.clicked.connect(self._toggle_hp_cr_tie)
         self._view.btn_suggest_ability_scores.clicked.connect(
             self._suggest_ability_scores
         )
-        self._view.btn_generate_all.clicked.connect(self._generate_all)
+        self._view.btn_suggest_all.clicked.connect(self._generate_all)
+        self._view.btn_generate_markdown.clicked.connect(self.generate_markdown_file)
+        self._view.checkbox_telepathy.clicked.connect(self._telepathy_toggled)
+
+    def _telepathy_toggled(self, enabled: bool) -> None:
+        self._view.spinbox_telepathy_range.setEnabled(enabled)
 
     def _toggle_ac_cr_tie(self, tie_ac_to_cr: bool) -> None:
         if tie_ac_to_cr:
@@ -155,19 +167,19 @@ class MonsterCreationController(QWidget):
                 avg_party_level=self.current_avg_party_level,
             )
             self._view.lineedit_challenge_rating.setText(str(encounter.monster_cr))
-            self._view.lbl_per_monster_for_x_monsters.setText(
+            self._view._lbl_per_monster_for_x_monsters.setText(
                 f"per monster, for {encounter.num_monsters} monsters"
             )
             if (
                 self.current_challenge_rating is not None
-                and self._view.checkbox_ac_cr_tie.isChecked()
+                and self._view.checkbox_tie_ac_to_cr.isChecked()
             ):
                 self._view.spinbox_ac.setValue(
                     self.current_challenge_rating.armor_class
                 )
             if (
                 self.current_challenge_rating is not None
-                and self._view.checkbox_hp_cr_tie.isChecked()
+                and self._view.checkbox_tie_hp_to_cr.isChecked()
             ):
                 if self.current_size is not None:
                     self._view.lineedit_hp.setText(
@@ -185,6 +197,8 @@ class MonsterCreationController(QWidget):
         self._suggest_creature_type()
         self._suggest_alignment()
         self._suggest_size()
+        self._suggest_encounter()
+        self._calc_cr()
         self._suggest_ability_scores()
         self._generate_artwork()
         # self._suggest_skill_proficiencies()
@@ -196,7 +210,7 @@ class MonsterCreationController(QWidget):
     def _refine_description(self) -> None:
         print("Refining monster concept...")
         if not self.current_description:
-            raise RuntimeError
+            raise RuntimeError  # TODO: Generate description
         refined_concept = self._mm.refine_monster_concept(self.current_description)
         print(f"Refined: {refined_concept}")
         self._view.textedit_description.setText(refined_concept)
@@ -274,6 +288,7 @@ class MonsterCreationController(QWidget):
             )
         )
         self._view.cb_size.setCurrentIndex(suggestion_idx)
+        self._calc_cr()
 
     def _suggest_ability_scores(self) -> None:
         if not self.current_name:
@@ -285,7 +300,6 @@ class MonsterCreationController(QWidget):
         if not self.current_challenge_rating:
             print("Monster challenge rating required to generate ability scores")
             return
-        # TODO: Do regex
         suggested_scores_txt = self._mm._openai_agent.generate_text(
             f"Given the provided D&D 5E 2024 monster name, description and challenge rating, suggest a set of ability scores for it. Your response must include key-value pairs of the form SCORE_NAME:SCORE_VALUE where SCORE_NAME is Strength,Dexterity,Constitution,Intelligence,Wisdom or Charisma, and SCORE_VALUE is any number 0-30. You must generate one key-value pair for each SCORE_NAME, and no other text whatsoever. The monster's name is: {self.current_name}. The Monster's Challenge Rating is: {self.current_challenge_rating.rating}. The Monster's description is: {self.current_description}."
         )
@@ -304,22 +318,95 @@ class MonsterCreationController(QWidget):
         self._view.spinbox_wis.setValue(ab_sc.scores[Ability.WISDOM])
         self._view.spinbox_cha.setValue(ab_sc.scores[Ability.CHARISMA])
 
+    def text_prompt(
+        self, givens: dict[str, str], suggestions: list[str], must_includes: list[str]
+    ) -> str:
+        s = f"Given the provided D&D 5E monster {', '.join(givens.keys())}, suggest {', '.join(suggestions)} for it. Your response must include {', '.join(must_includes)}, and no other text whatsoever."
+        for given_title, given_value in givens.items():
+            s = s + f" The monster's {given_title} is: {given_value}."
+        return s
+
+    def _suggest_encounter(self) -> None:
+        if not self.current_name:
+            print("Monster name required to generate ability scores.")
+            return
+        if not self.current_description:
+            print("Monster description required to generate ability scores.")
+            return
+        print("Suggesting encounter statistics...")
+        suggested_encounter_txt = self._mm._openai_agent.generate_text(
+            f"Given the provided D&D 5E 2024 monster name and description, suggest appropriate encounter statistics for it. Your response must include key-value pairs of the form KEY:VALUE where KEY is Size,Difficulty,Number of Player Characters and Average Party Level. For the Key 'Size', the valid values are SINGLETON, SMALL, MEDIUM LARGE, SWARM. For the key 'Difficulty', the valid values are LOW, MODERATE and HIGH. For the key 'Number of Player Characters', the valid values are an integer 1-8. For the key 'Average Party Level', the valid values are an integer 1-20. You must generate 1 key-value pair for each KEY, and no other text whatsoever. The monster's name is: {self.current_name}. The monster's description is: {self.current_description}"
+        )
+        suggested_encounter_lines = [
+            el.replace(" ", "") for el in suggested_encounter_txt.split("\n")
+        ]
+        suggested_encounter_size = next(
+            (l for l in suggested_encounter_lines if "size:" in l.lower())
+        )
+        suggested_encounter_size = EncounterSize.from_name(
+            suggested_encounter_size.split(":")[1]
+        )
+        suggested_encounter_difficulty = next(
+            (l for l in suggested_encounter_lines if "difficulty:" in l.lower())
+        )
+        suggested_encounter_difficulty = EncounterDifficulty.from_name(
+            suggested_encounter_difficulty.split(":")[1]
+        )
+        suggested_num_pcs = next(
+            (
+                l
+                for l in suggested_encounter_lines
+                if "numberofplayercharacters:" in l.lower()
+            )
+        )
+        suggested_num_pcs = int(suggested_num_pcs.split(":")[1])
+        suggested_avg_party_level = next(
+            (l for l in suggested_encounter_lines if "averagepartylevel:" in l.lower())
+        )
+        suggested_avg_party_level = int(suggested_avg_party_level.split(":")[1])
+        idx = next(
+            (
+                i
+                for i in range(self._view.cb_encounter_size.count())
+                if self._view.cb_encounter_size.itemText(i)
+                == str(suggested_encounter_size.display_name)
+            )
+        )
+        self._view.cb_encounter_size.setCurrentIndex(idx)
+        print(f"Suggested encounter size: {suggested_encounter_size.display_name}")
+        idx = next(
+            (
+                i
+                for i in range(self._view.cb_encounter_difficulty.count())
+                if self._view.cb_encounter_difficulty.itemText(i)
+                == str(suggested_encounter_difficulty.display_name)
+            )
+        )
+        self._view.cb_encounter_difficulty.setCurrentIndex(idx)
+        print(
+            f"Suggested encounter difficulty: {suggested_encounter_difficulty.display_name}"
+        )
+        self._view.spinbox_num_pcs.setValue(suggested_num_pcs)
+        print(f"Suggested number of player characters: {suggested_num_pcs}")
+        self._view.spinbox_avg_party_level.setValue(suggested_avg_party_level)
+        print(f"Suggested average party level: {suggested_avg_party_level}")
+
     def _add_skill(self, proficiency_level: Proficiency) -> None:
         skill_text = self._view.cb_skills.currentText()
         skill = Skill.from_display_name(skill_text)
         if any(
             (
-                self._view.listview_skills.item(i)
+                self._view.listwidget_skills.item(i)
                 .data(Qt.ItemDataRole.DisplayRole)
                 .startswith(skill.display_name)
-                for i in range(self._view.listview_skills.count())
+                for i in range(self._view.listwidget_skills.count())
             )
         ):
             print(
                 f'"{skill.display_name} ({proficiency_level.display_name})" already exists, not adding duplicate...'
             )
             return
-        self._view.listview_skills.addItem(
+        self._view.listwidget_skills.addItem(
             f"{skill.display_name} ({proficiency_level.display_name})"
         )
 
@@ -327,8 +414,8 @@ class MonsterCreationController(QWidget):
         skill_text = self._view.cb_skills.currentText()
         skill = Skill.from_display_name(skill_text)
         idx_to_remove = None
-        for i in range(self._view.listview_skills.count()):
-            item_text: str = self._view.listview_skills.item(i).data(
+        for i in range(self._view.listwidget_skills.count()):
+            item_text: str = self._view.listwidget_skills.item(i).data(
                 Qt.ItemDataRole.DisplayRole
             )
             if item_text.startswith(skill.display_name):
@@ -337,33 +424,36 @@ class MonsterCreationController(QWidget):
         if idx_to_remove is None:
             print(f'Cannot find index for "{skill.display_name}", skipping...')
             return
-        self._view.listview_skills.takeItem(idx_to_remove)
+        self._view.listwidget_skills.takeItem(idx_to_remove)
 
     def _add_language(self, proficiency_level: LanguageProficiency) -> None:
         lang_text = self._view.cb_languages.currentText()
         language = Language.from_display_name(lang_text)
         if any(
             (
-                self._view.listview_languages.item(i)
+                self._view.listwidget_languages.item(i)
                 .data(Qt.ItemDataRole.DisplayRole)
                 .startswith(language.display_name)
-                for i in range(self._view.listview_languages.count())
+                for i in range(self._view.listwidget_languages.count())
             )
         ):
             print(
                 f'"{language.display_name} ({proficiency_level.display_name})" already exists, not adding duplicate...'
             )
             return
-        self._view.listview_languages.addItem(
+        self._view.listwidget_languages.addItem(
             f"{language.display_name} ({proficiency_level.display_name})"
         )
+
+    def _add_all_languages(self) -> None:
+        pass
 
     def _remove_language(self) -> None:
         lang_text = self._view.cb_languages.currentText()
         language = Language.from_display_name(lang_text)
         idx_to_remove = None
-        for i in range(self._view.listview_languages.count()):
-            item_text: str = self._view.listview_languages.item(i).data(
+        for i in range(self._view.listwidget_languages.count()):
+            item_text: str = self._view.listwidget_languages.item(i).data(
                 Qt.ItemDataRole.DisplayRole
             )
             if item_text.startswith(language.display_name):
@@ -372,24 +462,24 @@ class MonsterCreationController(QWidget):
         if idx_to_remove is None:
             print(f'Cannot find index for "{language.display_name}", skipping...')
             return
-        self._view.listview_languages.takeItem(idx_to_remove)
+        self._view.listwidget_languages.takeItem(idx_to_remove)
 
     def _add_damage(self, resistance_level: Resistance) -> None:
         dmg_text = self._view.cb_damage.currentText()
         dmg_type = DamageType.from_display_name(dmg_text)
         if any(
             (
-                self._view.listview_damage.item(i)
+                self._view.listwidget_damage.item(i)
                 .data(Qt.ItemDataRole.DisplayRole)
                 .startswith(dmg_type.display_name)
-                for i in range(self._view.listview_damage.count())
+                for i in range(self._view.listwidget_damage.count())
             )
         ):
             print(
                 f'"{dmg_type.display_name} ({resistance_level.display_name})" already exists, not adding duplicate...'
             )
             return
-        self._view.listview_damage.addItem(
+        self._view.listwidget_damage.addItem(
             f"{dmg_type.display_name} ({resistance_level.display_name})"
         )
 
@@ -397,8 +487,8 @@ class MonsterCreationController(QWidget):
         dmg_text = self._view.cb_damage.currentText()
         dmg_type = DamageType.from_display_name(dmg_text)
         idx_to_remove = None
-        for i in range(self._view.listview_damage.count()):
-            item_text: str = self._view.listview_damage.item(i).data(
+        for i in range(self._view.listwidget_damage.count()):
+            item_text: str = self._view.listwidget_damage.item(i).data(
                 Qt.ItemDataRole.DisplayRole
             )
             if item_text.startswith(dmg_type.display_name):
@@ -407,24 +497,24 @@ class MonsterCreationController(QWidget):
         if idx_to_remove is None:
             print(f'Cannot find index for "{dmg_type.display_name}", skipping...')
             return
-        self._view.listview_damage.takeItem(idx_to_remove)
+        self._view.listwidget_damage.takeItem(idx_to_remove)
 
     def _add_condition_immunity(self) -> None:
         condition_text = self._view.cb_conditions.currentText()
         condition = Condition.from_display_name(condition_text)
         if any(
             (
-                self._view.listview_conditions.item(i)
+                self._view.listwidget_conditions.item(i)
                 .data(Qt.ItemDataRole.DisplayRole)
                 .startswith(condition.display_name)
-                for i in range(self._view.listview_conditions.count())
+                for i in range(self._view.listwidget_conditions.count())
             )
         ):
             print(
                 f'"{condition.display_name} ({Resistance.IMMUNE.display_name})" already exists, not adding duplicate...'
             )
             return
-        self._view.listview_conditions.addItem(
+        self._view.listwidget_conditions.addItem(
             f"{condition.display_name} ({Resistance.IMMUNE.display_name})"
         )
 
@@ -432,8 +522,8 @@ class MonsterCreationController(QWidget):
         condition_text = self._view.cb_conditions.currentText()
         condition = Condition.from_display_name(condition_text)
         idx_to_remove = None
-        for i in range(self._view.listview_conditions.count()):
-            item_text: str = self._view.listview_conditions.item(i).data(
+        for i in range(self._view.listwidget_conditions.count()):
+            item_text: str = self._view.listwidget_conditions.item(i).data(
                 Qt.ItemDataRole.DisplayRole
             )
             if item_text.startswith(condition.display_name):
@@ -442,7 +532,7 @@ class MonsterCreationController(QWidget):
         if idx_to_remove is None:
             print(f'Cannot find index for "{condition.display_name}", skipping...')
             return
-        self._view.listview_conditions.takeItem(idx_to_remove)
+        self._view.listwidget_conditions.takeItem(idx_to_remove)
 
     def _generate_artwork(self) -> None:
         print("Generating artwork...")
@@ -520,7 +610,7 @@ class MonsterCreationController(QWidget):
 
     @property
     def current_avg_party_level(self) -> int | None:
-        return self._view.spinbox_avg_party_lvl.value()
+        return self._view.spinbox_avg_party_level.value()
 
     @property
     def current_num_pcs(self) -> int | None:
@@ -532,8 +622,8 @@ class MonsterCreationController(QWidget):
         capture_group_skill_display_name = 1
         capture_group_proficiency_display_name = 2
         retval = []
-        for i in range(self._view.listview_skills.count()):
-            item_text = self._view.listview_skills.item(i).data(
+        for i in range(self._view.listwidget_skills.count()):
+            item_text = self._view.listwidget_skills.item(i).data(
                 Qt.ItemDataRole.DisplayRole
             )
             match = re.match(pattern, item_text)
@@ -552,8 +642,8 @@ class MonsterCreationController(QWidget):
         capture_group_condition_display_name = 1
         capture_group_resistance_display_name = 2
         retval = []
-        for i in range(self._view.listview_conditions.count()):
-            item_text = self._view.listview_conditions.item(i).data(
+        for i in range(self._view.listwidget_conditions.count()):
+            item_text = self._view.listwidget_conditions.item(i).data(
                 Qt.ItemDataRole.DisplayRole
             )
             match = re.match(pattern, item_text)
@@ -572,8 +662,8 @@ class MonsterCreationController(QWidget):
         capture_group_dmg_display_name = 1
         capture_group_resistance_display_name = 2
         retval = []
-        for i in range(self._view.listview_damage.count()):
-            item_text = self._view.listview_damage.item(i).data(
+        for i in range(self._view.listwidget_damage.count()):
+            item_text = self._view.listwidget_damage.item(i).data(
                 Qt.ItemDataRole.DisplayRole
             )
             match = re.match(pattern, item_text)
@@ -592,8 +682,8 @@ class MonsterCreationController(QWidget):
         capture_group_language_display_name = 1
         capture_group_language_proficiency_display_name = 2
         retval = []
-        for i in range(self._view.listview_languages.count()):
-            item_text = self._view.listview_languages.item(i).data(
+        for i in range(self._view.listwidget_languages.count()):
+            item_text = self._view.listwidget_languages.item(i).data(
                 Qt.ItemDataRole.DisplayRole
             )
             match = re.match(pattern, item_text)
@@ -657,6 +747,28 @@ class MonsterCreationController(QWidget):
             SpeedType.BURROW: self._view.spinbox_burrow_speed.value(),
             SpeedType.FLY: self._view.spinbox_fly_speed.value(),
         }
+
+    @property
+    def speed_display(self) -> str:
+        cs = self.current_speed
+        st = ""
+        walk_speed = f"{cs[SpeedType.WALKING]} ft."
+        additional_speeds = []
+        alphabetical_types = sorted(
+            [s for s in SpeedType if s != SpeedType.WALKING],
+            key=lambda x: x.name.lower(),
+        )
+        for speed_type in alphabetical_types:
+            if cs[speed_type] != 0:
+                additional_speeds.append(
+                    f"{speed_type.name.capitalize()} {cs[speed_type]} ft."
+                )
+        if additional_speeds:
+            additional_speeds.insert(0, walk_speed)
+            st = ", ".join(additional_speeds)
+        else:
+            st = walk_speed
+        return st
 
     @property
     def current_initiative(self) -> str:
@@ -725,6 +837,7 @@ class MonsterCreationController(QWidget):
 
     @property
     def languages_display(self) -> str:
+        # TODO: Add "All" and "Common plus x other languages" options
         return ""  # TODO: Implement me
 
     @property
@@ -745,7 +858,9 @@ class MonsterCreationController(QWidget):
 
     @property
     def strength_save(self) -> int:
-        return self.strength_mod  # TODO: Implement me
+        if self._view.checkbox_prof_st_str.isChecked():
+            return self.strength_mod + self.current_challenge_rating.proficiency_bonus
+        return self.strength_mod
 
     @property
     def dex(self) -> int:
@@ -757,7 +872,9 @@ class MonsterCreationController(QWidget):
 
     @property
     def dex_save(self) -> int:
-        return self.dex_mod  # TODO: Implement me
+        if self._view.checkbox_prof_st_dex.isChecked():
+            return self.dex_mod + self.current_challenge_rating.proficiency_bonus
+        return self.dex_mod
 
     @property
     def con(self) -> int:
@@ -769,7 +886,9 @@ class MonsterCreationController(QWidget):
 
     @property
     def con_save(self) -> int:
-        return self.con_mod  # TODO: Implement me
+        if self._view.checkbox_prof_st_con.isChecked():
+            return self.con_mod + self.current_challenge_rating.proficiency_bonus
+        return self.con_mod
 
     @property
     def intelligence(self) -> int:
@@ -781,7 +900,11 @@ class MonsterCreationController(QWidget):
 
     @property
     def intelligence_save(self) -> int:
-        return self.intelligence_mod  # TODO: Implement me
+        if self._view.checkbox_prof_st_int.isChecked():
+            return (
+                self.intelligence_mod + self.current_challenge_rating.proficiency_bonus
+            )
+        return self.intelligence_mod
 
     @property
     def wis(self) -> int:
@@ -793,7 +916,9 @@ class MonsterCreationController(QWidget):
 
     @property
     def wis_save(self) -> int:
-        return self.wis_mod  # TODO: Implement me
+        if self._view.checkbox_prof_st_wis.isChecked():
+            return self.wis_mod + self.current_challenge_rating.proficiency_bonus
+        return self.wis_mod
 
     @property
     def cha(self) -> int:
@@ -805,11 +930,13 @@ class MonsterCreationController(QWidget):
 
     @property
     def cha_save(self) -> int:
-        return self.cha_mod  # TODO: Implement me
+        if self._view.checkbox_prof_st_cha.isChecked():
+            return self.cha_mod + self.current_challenge_rating.proficiency_bonus
+        return self.cha_mod
 
     def _generate_homebrewery_v3_markdown(self, wide: bool = False) -> str:
         return (
-            f"{{monster,frame{',wide' if wide else ''}\n"
+            f"{{{{monster,frame{',wide' if wide else ''}\n"
             f"## {self.current_name}\n"
             f"*{self.current_size.display_name} {self.current_creature_type.display_name}{self.tags}, {self.current_alignment.display_name}*\n"
             "\n"
@@ -818,7 +945,7 @@ class MonsterCreationController(QWidget):
             "{{vitals\n"
             f"**AC** :: {self.current_ac}\n"
             f"**HP** :: {self.current_hp}\n"
-            f"**Speed** :: {self.current_speed}\n"
+            f"**Speed** :: {self.speed_display}\n"
             "\column\n"
             f"**Initiative** :: {self.current_initiative}\n"
             "}}\n"
@@ -854,3 +981,17 @@ class MonsterCreationController(QWidget):
             "\n"
             "}}\n"
         )
+
+    def generate_markdown_file(
+        self,
+        checked: bool,
+        output_path: Path | None = None,
+        wide_statblock: bool = False,
+    ) -> None:
+        if output_path is None:
+            fn = self.current_name.lower().replace(" ", "_")
+            output_path = Path(f"C:\\Users\\Jon\\Desktop\\{fn}_statblock.md")
+        with open(output_path, "w") as markdown_file:
+            markdown_txt = self._generate_homebrewery_v3_markdown(wide=wide_statblock)
+            markdown_file.write(markdown_txt)
+        print(f"File write complete: {output_path}")

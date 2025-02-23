@@ -1,10 +1,10 @@
 from PyQt5.QtWidgets import QMainWindow, QApplication
 import sys
 from PyQt5.QtCore import Qt
-from ..view.monster_maker_mainwindow_view import Ui_MainWindow
-from .monster_creation_controller import (
+from monster_forge.gui.controller.monster_creation_controller import (
     MonsterCreationController,
 )
+from monster_forge.gui.view.monster_maker_mainwindow_view import Ui_MainWindow
 
 
 class MainWindowController(QMainWindow):

@@ -7,7 +7,7 @@
     <x>0</x>
     <y>0</y>
     <width>468</width>
-    <height>1042</height>
+    <height>1130</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -471,42 +471,14 @@
    </item>
    <item>
     <layout class="QGridLayout" name="gl_ability_scores">
-     <item row="0" column="2">
+     <item row="0" column="3">
       <widget class="QLabel" name="_lbl_dex">
        <property name="text">
         <string>Dex:</string>
        </property>
       </widget>
      </item>
-     <item row="0" column="4">
-      <widget class="QLabel" name="_lbl_con">
-       <property name="text">
-        <string>Con:</string>
-       </property>
-      </widget>
-     </item>
-     <item row="0" column="1">
-      <widget class="QSpinBox" name="spinbox_str">
-       <property name="value">
-        <number>10</number>
-       </property>
-      </widget>
-     </item>
-     <item row="0" column="0">
-      <widget class="QLabel" name="_lbl_str">
-       <property name="text">
-        <string>Str:</string>
-       </property>
-      </widget>
-     </item>
-     <item row="0" column="3">
-      <widget class="QSpinBox" name="spinbox_dex">
-       <property name="value">
-        <number>10</number>
-       </property>
-      </widget>
-     </item>
-     <item row="0" column="5">
+     <item row="0" column="7">
       <widget class="QSpinBox" name="spinbox_con">
        <property name="value">
         <number>10</number>
@@ -520,6 +492,69 @@
        </property>
       </widget>
      </item>
+     <item row="0" column="1">
+      <widget class="QSpinBox" name="spinbox_str">
+       <property name="value">
+        <number>10</number>
+       </property>
+      </widget>
+     </item>
+     <item row="1" column="3">
+      <widget class="QLabel" name="_lbl_wis">
+       <property name="text">
+        <string>Wis:</string>
+       </property>
+      </widget>
+     </item>
+     <item row="1" column="2">
+      <widget class="QCheckBox" name="checkbox_prof_int_st">
+       <property name="text">
+        <string>Proficient</string>
+       </property>
+      </widget>
+     </item>
+     <item row="1" column="7">
+      <widget class="QSpinBox" name="spinbox_cha">
+       <property name="value">
+        <number>10</number>
+       </property>
+      </widget>
+     </item>
+     <item row="0" column="6">
+      <widget class="QLabel" name="_lbl_con">
+       <property name="text">
+        <string>Con:</string>
+       </property>
+      </widget>
+     </item>
+     <item row="1" column="4">
+      <widget class="QSpinBox" name="spinbox_wis">
+       <property name="value">
+        <number>10</number>
+       </property>
+      </widget>
+     </item>
+     <item row="0" column="2">
+      <widget class="QCheckBox" name="checkbox_prof_str_st">
+       <property name="text">
+        <string>Proficient</string>
+       </property>
+      </widget>
+     </item>
+     <item row="1" column="5">
+      <widget class="QCheckBox" name="checkbox_prof_wis_st">
+       <property name="text">
+        <string>Proficient</string>
+       </property>
+      </widget>
+     </item>
+     <item row="0" column="0">
+      <widget class="QLabel" name="_lbl_str">
+       <property name="text">
+        <string>Str:</string>
+       </property>
+      </widget>
+     </item>
      <item row="1" column="1">
       <widget class="QSpinBox" name="spinbox_int">
        <property name="value">
@@ -527,31 +562,38 @@
        </property>
       </widget>
      </item>
-     <item row="1" column="2">
-      <widget class="QLabel" name="_lbl_wis">
-       <property name="text">
-        <string>Wis:</string>
-       </property>
-      </widget>
-     </item>
-     <item row="1" column="3">
-      <widget class="QSpinBox" name="spinbox_wis">
-       <property name="value">
-        <number>10</number>
-       </property>
-      </widget>
-     </item>
-     <item row="1" column="4">
+     <item row="1" column="6">
       <widget class="QLabel" name="_lbl_cha">
        <property name="text">
         <string>Cha:</string>
        </property>
       </widget>
      </item>
-     <item row="1" column="5">
-      <widget class="QSpinBox" name="spinbox_cha">
+     <item row="0" column="4">
+      <widget class="QSpinBox" name="spinbox_dex">
        <property name="value">
         <number>10</number>
+       </property>
+      </widget>
+     </item>
+     <item row="0" column="5">
+      <widget class="QCheckBox" name="checkbox_prof_dex_st">
+       <property name="text">
+        <string>Proficient</string>
+       </property>
+      </widget>
+     </item>
+     <item row="0" column="8">
+      <widget class="QCheckBox" name="checkbox_prof_con_st">
+       <property name="text">
+        <string>Proficient</string>
+       </property>
+      </widget>
+     </item>
+     <item row="1" column="8">
+      <widget class="QCheckBox" name="checkbox_prof_cha_st">
+       <property name="text">
+        <string>Proficient</string>
        </property>
       </widget>
      </item>
@@ -566,6 +608,16 @@
    </item>
    <item>
     <layout class="QGridLayout" name="gl_skills">
+     <item row="0" column="3">
+      <widget class="QPushButton" name="btn_expert_skill">
+       <property name="text">
+        <string>Expert</string>
+       </property>
+      </widget>
+     </item>
+     <item row="1" column="1">
+      <widget class="QComboBox" name="cb_damage"/>
+     </item>
      <item row="2" column="5">
       <widget class="QPushButton" name="btn_remove_condition">
        <property name="text">
@@ -573,15 +625,22 @@
        </property>
       </widget>
      </item>
-     <item row="4" column="0">
-      <widget class="QLabel" name="_lbl_telepathy">
+     <item row="1" column="3">
+      <widget class="QPushButton" name="btn_immune_damage">
        <property name="text">
-        <string>Telepathy:</string>
+        <string>Immune</string>
        </property>
       </widget>
      </item>
-     <item row="2" column="4">
-      <widget class="QListWidget" name="listview_conditions"/>
+     <item row="1" column="4">
+      <widget class="QListWidget" name="listview_damage"/>
+     </item>
+     <item row="2" column="2">
+      <widget class="QPushButton" name="btn_immune_condition">
+       <property name="text">
+        <string>Immune</string>
+       </property>
+      </widget>
      </item>
      <item row="3" column="0">
       <widget class="QLabel" name="_lbl_languages">
@@ -590,26 +649,95 @@
        </property>
       </widget>
      </item>
-     <item row="0" column="2">
-      <widget class="QPushButton" name="btn_proficient_skill">
+     <item row="2" column="4">
+      <widget class="QListWidget" name="listview_conditions"/>
+     </item>
+     <item row="5" column="0">
+      <widget class="QLabel" name="_lbl_telepathy">
        <property name="text">
-        <string>Proficient</string>
+        <string>Telepathy:</string>
+       </property>
+      </widget>
+     </item>
+     <item row="2" column="0">
+      <widget class="QLabel" name="_lbl_conditions">
+       <property name="text">
+        <string>Conditions:</string>
+       </property>
+      </widget>
+     </item>
+     <item row="3" column="3">
+      <widget class="QPushButton" name="btn_all_languages">
+       <property name="text">
+        <string>All</string>
+       </property>
+      </widget>
+     </item>
+     <item row="5" column="1">
+      <widget class="QCheckBox" name="checkbox_telepathy">
+       <property name="text">
+        <string/>
+       </property>
+      </widget>
+     </item>
+     <item row="5" column="3">
+      <widget class="QLineEdit" name="lineedit_telepathy_range"/>
+     </item>
+     <item row="0" column="5">
+      <widget class="QPushButton" name="btn_remove_skill">
+       <property name="text">
+        <string>Remove</string>
+       </property>
+      </widget>
+     </item>
+     <item row="5" column="4">
+      <widget class="QLabel" name="_lbl_ft">
+       <property name="text">
+        <string>ft.</string>
+       </property>
+      </widget>
+     </item>
+     <item row="1" column="2">
+      <widget class="QPushButton" name="btn_resistant_damage">
+       <property name="text">
+        <string>Resistant</string>
+       </property>
+      </widget>
+     </item>
+     <item row="1" column="5">
+      <widget class="QPushButton" name="btn_remove_damage">
+       <property name="text">
+        <string>Remove</string>
+       </property>
+      </widget>
+     </item>
+     <item row="3" column="2">
+      <widget class="QPushButton" name="btn_add_language">
+       <property name="text">
+        <string>Add</string>
        </property>
       </widget>
      </item>
      <item row="3" column="1">
       <widget class="QComboBox" name="cb_languages"/>
      </item>
+     <item row="0" column="4">
+      <widget class="QListWidget" name="listview_skills"/>
+     </item>
      <item row="0" column="1">
       <widget class="QComboBox" name="cb_skills"/>
      </item>
-     <item row="1" column="4">
-      <widget class="QListWidget" name="listview_damage"/>
-     </item>
-     <item row="2" column="0">
-      <widget class="QLabel" name="_lbl_conditions">
+     <item row="3" column="5">
+      <widget class="QPushButton" name="btn_remove_language">
        <property name="text">
-        <string>Conditions:</string>
+        <string>Remove</string>
+       </property>
+      </widget>
+     </item>
+     <item row="0" column="2">
+      <widget class="QPushButton" name="btn_proficient_skill">
+       <property name="text">
+        <string>Proficient</string>
        </property>
       </widget>
      </item>
@@ -623,60 +751,15 @@
      <item row="3" column="4">
       <widget class="QListWidget" name="listview_languages"/>
      </item>
-     <item row="1" column="3">
-      <widget class="QPushButton" name="btn_immune_damage">
+     <item row="5" column="2">
+      <widget class="QLabel" name="_lbl_range">
        <property name="text">
-        <string>Immune</string>
+        <string>Range:</string>
        </property>
       </widget>
      </item>
-     <item row="3" column="3">
-      <widget class="QPushButton" name="btn_speaks_language">
-       <property name="text">
-        <string>Speaks</string>
-       </property>
-      </widget>
-     </item>
-     <item row="4" column="3">
-      <widget class="QLineEdit" name="lineedit_telepathy_range"/>
-     </item>
-     <item row="2" column="2">
-      <widget class="QPushButton" name="btn_immune_condition">
-       <property name="text">
-        <string>Immune</string>
-       </property>
-      </widget>
-     </item>
-     <item row="3" column="2">
-      <widget class="QPushButton" name="btn_understands_language">
-       <property name="text">
-        <string>Understands</string>
-       </property>
-      </widget>
-     </item>
-     <item row="0" column="4">
-      <widget class="QListWidget" name="listview_skills"/>
-     </item>
-     <item row="4" column="4">
-      <widget class="QLabel" name="_lbl_ft">
-       <property name="text">
-        <string>ft.</string>
-       </property>
-      </widget>
-     </item>
-     <item row="1" column="5">
-      <widget class="QPushButton" name="btn_remove_damage">
-       <property name="text">
-        <string>Remove</string>
-       </property>
-      </widget>
-     </item>
-     <item row="0" column="3">
-      <widget class="QPushButton" name="btn_expert_skill">
-       <property name="text">
-        <string>Expert</string>
-       </property>
-      </widget>
+     <item row="2" column="1">
+      <widget class="QComboBox" name="cb_conditions"/>
      </item>
      <item row="0" column="0">
       <widget class="QLabel" name="_lbl_skills">
@@ -685,48 +768,62 @@
        </property>
       </widget>
      </item>
-     <item row="3" column="5">
-      <widget class="QPushButton" name="btn_remove_language">
+     <item row="4" column="0">
+      <widget class="QLabel" name="label">
        <property name="text">
-        <string>Remove</string>
-       </property>
-      </widget>
-     </item>
-     <item row="0" column="5">
-      <widget class="QPushButton" name="btn_remove_skill">
-       <property name="text">
-        <string>Remove</string>
-       </property>
-      </widget>
-     </item>
-     <item row="1" column="1">
-      <widget class="QComboBox" name="cb_damage"/>
-     </item>
-     <item row="1" column="2">
-      <widget class="QPushButton" name="btn_resistant_damage">
-       <property name="text">
-        <string>Resistant</string>
-       </property>
-      </widget>
-     </item>
-     <item row="4" column="2">
-      <widget class="QLabel" name="_lbl_range">
-       <property name="text">
-        <string>Range:</string>
+        <string>Senses:</string>
        </property>
       </widget>
      </item>
      <item row="4" column="1">
-      <widget class="QCheckBox" name="checkbox_telepathy">
+      <widget class="QComboBox" name="cb_senses"/>
+     </item>
+     <item row="4" column="2">
+      <layout class="QHBoxLayout" name="horizontalLayout">
+       <item>
+        <widget class="QSpinBox" name="spinbox_sense_range"/>
+       </item>
+       <item>
+        <widget class="QLabel" name="_lbl_sense_range_ft">
+         <property name="text">
+          <string>ft.</string>
+         </property>
+        </widget>
+       </item>
+      </layout>
+     </item>
+     <item row="4" column="3">
+      <widget class="QPushButton" name="btn_add_sense">
        <property name="text">
-        <string/>
+        <string>Add</string>
        </property>
       </widget>
      </item>
-     <item row="2" column="1">
-      <widget class="QComboBox" name="cb_conditions"/>
+     <item row="4" column="4">
+      <widget class="QListWidget" name="listview_senses"/>
+     </item>
+     <item row="4" column="5">
+      <widget class="QPushButton" name="btn_remove_sense">
+       <property name="text">
+        <string>Remove</string>
+       </property>
+      </widget>
      </item>
     </layout>
+   </item>
+   <item>
+    <widget class="Line" name="line_2">
+     <property name="orientation">
+      <enum>Qt::Horizontal</enum>
+     </property>
+    </widget>
+   </item>
+   <item>
+    <widget class="QPushButton" name="btn_generate_markdown">
+     <property name="text">
+      <string>Generate Markdown</string>
+     </property>
+    </widget>
    </item>
   </layout>
  </widget>
