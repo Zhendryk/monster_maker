@@ -23,6 +23,7 @@ from monster_forge.dnd.dnd import (
     AbilityScores,
     Ability,
     SpeedType,
+    Sense,
 )
 from pathlib import Path
 from functools import partial
@@ -77,6 +78,8 @@ class MonsterCreationController(QWidget):
         language_items.append("All")
         self._view.cb_languages.addItems(sorted(language_items))
         self._view.cb_languages.setCurrentIndex(-1)
+        self._view.cb_senses.addItems(sorted([s.display_name for s in Sense]))
+        self._view.cb_senses.setCurrentIndex(-1)
         self._view.cb_size.addItems(sorted([s.display_name for s in Size]))
         self._view.cb_size.setCurrentIndex(-1)
         self._view.cb_size.currentIndexChanged.connect(self._calc_cr)
@@ -109,6 +112,8 @@ class MonsterCreationController(QWidget):
         self._view.btn_damage_remove.clicked.connect(self._remove_damage)
         self._view.btn_languages_add.clicked.connect(self._add_language)
         self._view.btn_languages_remove.clicked.connect(self._remove_language)
+        self._view.btn_senses_add.clicked.connect(self._add_sense)
+        self._view.btn_senses_remove.clicked.connect(self._remove_sense)
         self._view.btn_conditions_immune.clicked.connect(self._add_condition_immunity)
         self._view.btn_conditions_remove.clicked.connect(
             self._remove_condition_immunity
@@ -215,7 +220,16 @@ class MonsterCreationController(QWidget):
     def _refine_description(self) -> None:
         print("Refining monster concept...")
         if not self.current_description:
-            raise RuntimeError  # TODO: Generate description
+            if not self.current_name:
+                print("Cannot generate description without a name, skipping...")
+                return
+            print("Description not found, generating one based on the name...")
+            generated_concept = self._mm._openai_agent.generate_text(
+                f"Given the following D&D 5E 2024 monster name, generate a 2-3 sentence creative and unique description of that monster. Your response must be that description and no other text whatsoever. The monster's name is: {self.current_name}"
+            )
+            print(f"Generated: {generated_concept}")
+            self._view.textedit_description.setText(generated_concept)
+            return
         refined_concept = self._mm.refine_monster_concept(self.current_description)
         print(f"Refined: {refined_concept}")
         self._view.textedit_description.setText(refined_concept)
@@ -497,6 +511,42 @@ class MonsterCreationController(QWidget):
             return
         self._view.listwidget_damage.takeItem(idx_to_remove)
 
+    def _add_sense(self) -> None:
+        sense_text = self._view.cb_senses.currentText()
+        sense = Sense.from_display_name(sense_text)
+        if any(
+            (
+                self._view.listwidget_senses.item(i)
+                .data(Qt.ItemDataRole.DisplayRole)
+                .startswith(sense.display_name)
+                for i in range(self._view.listwidget_senses.count())
+            )
+        ):
+            print(f'"{sense.display_name}" already exists, not adding duplicate...')
+            return
+        if self._view.spinbox_sense_range.value() <= 0:
+            print(f"Invalid value for sense range, skipping...")
+            return
+        self._view.listwidget_senses.addItem(
+            f"{sense.display_name} - {self._view.spinbox_sense_range.value()}"
+        )
+
+    def _remove_sense(self) -> None:
+        sense_text = self._view.cb_senses.currentText()
+        sense = Sense.from_display_name(sense_text)
+        idx_to_remove = None
+        for i in range(self._view.listwidget_senses.count()):
+            item_text: str = self._view.listwidget_senses.item(i).data(
+                Qt.ItemDataRole.DisplayRole
+            )
+            if item_text.startswith(sense.display_name):
+                idx_to_remove = i
+                break
+        if idx_to_remove is None:
+            print(f'Cannot find index for "{sense.display_name}", skipping...')
+            return
+        self._view.listwidget_senses.takeItem(idx_to_remove)
+
     def _add_condition_immunity(self) -> None:
         condition_text = self._view.cb_conditions.currentText()
         condition = Condition.from_display_name(condition_text)
@@ -508,13 +558,9 @@ class MonsterCreationController(QWidget):
                 for i in range(self._view.listwidget_conditions.count())
             )
         ):
-            print(
-                f'"{condition.display_name} ({Resistance.IMMUNE.display_name})" already exists, not adding duplicate...'
-            )
+            print(f'"{condition.display_name}" already exists, not adding duplicate...')
             return
-        self._view.listwidget_conditions.addItem(
-            f"{condition.display_name} ({Resistance.IMMUNE.display_name})"
-        )
+        self._view.listwidget_conditions.addItem(f"{condition.display_name}")
 
     def _remove_condition_immunity(self) -> None:
         condition_text = self._view.cb_conditions.currentText()
@@ -675,27 +721,13 @@ class MonsterCreationController(QWidget):
         return retval
 
     @property
-    def current_languages(self) -> Sequence[tuple[Language, LanguageProficiency]]:
-        pattern = re.compile(r"^(.*)\s\((.*)\)$")
-        capture_group_language_display_name = 1
-        capture_group_language_proficiency_display_name = 2
+    def current_languages(self) -> Sequence[Language]:
         retval = []
         for i in range(self._view.listwidget_languages.count()):
             item_text = self._view.listwidget_languages.item(i).data(
                 Qt.ItemDataRole.DisplayRole
             )
-            match = re.match(pattern, item_text)
-            if match is None:
-                raise RuntimeError
-            language_text = match.group(capture_group_language_display_name)
-            language = Language.from_display_name(language_text)
-            language_proficiency_text = match.group(
-                capture_group_language_proficiency_display_name
-            )
-            language_proficiency = LanguageProficiency.from_display_name(
-                language_proficiency_text
-            )
-            retval.append((language, language_proficiency))
+            retval.append(Language.from_display_name(item_text))
         return retval
 
     @property
@@ -777,6 +809,19 @@ class MonsterCreationController(QWidget):
         )
 
     @property
+    def current_senses(self) -> dict[Sense, int]:
+        retval = {}
+        for i in range(self._view.listwidget_senses.count()):
+            item = self._view.listwidget_senses.item(i)
+            text = item.text()
+            sense = next(
+                (s for s in Sense if text.lower().startswith(s.display_name.lower()))
+            )
+            range_ft = int(text.split(" - ")[1])
+            retval[sense] = range_ft
+        return retval
+
+    @property
     def skills_display(self) -> str:
         if self.current_challenge_rating is None:
             return ""
@@ -800,6 +845,19 @@ class MonsterCreationController(QWidget):
                     raise NotImplementedError
             retval.append(f"{skill.display_name} +{total_bonus}")
         return ", ".join(retval)
+
+    @property
+    def passive_perception(self) -> int:
+        retval = 10 + self.wis_mod
+        if (
+            Skill.PERCEPTION,
+            Proficiency.PROFICIENT,
+        ) in self.current_skill_proficiencies or (
+            Skill.PERCEPTION,
+            Proficiency.EXPERTISE,
+        ) in self.current_skill_proficiencies:
+            retval += self.current_challenge_rating.proficiency_bonus
+        return retval
 
     @property
     def resistances_display(self) -> str:
@@ -831,12 +889,19 @@ class MonsterCreationController(QWidget):
 
     @property
     def senses_display(self) -> str:
-        return ""  # TODO: Implement me
+        alphabetical_senses = sorted(
+            [f"{s.display_name} {r} ft." for s, r in self.current_senses.items()],
+            key=lambda x: x[0].display_name.lower(),
+        )
+        return (
+            ", ".join(alphabetical_senses)
+            + ";"
+            + f"Passive Perception {self.passive_perception}"
+        )
 
     @property
     def languages_display(self) -> str:
-        # TODO: Add "All" and "Common plus x other languages" options
-        return ""  # TODO: Implement me
+        return ", ".join(self.current_languages)
 
     @property
     def traits_display(self) -> str:
@@ -995,4 +1060,4 @@ class MonsterCreationController(QWidget):
         print(f"File write complete: {output_path}")
 
 
-# TODO: Traits, Actions, Bonus Actions, Reactions, Legendary Actions, toggle for "has lair", etc.
+# TODO: Traits, Actions, Bonus Actions, Reactions, Legendary Actions, toggle for "has lair", tags, telepathy in the languages display etc.
