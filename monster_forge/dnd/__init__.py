@@ -1,6 +1,6 @@
 from .dnd import (
     Monster,
-    MonsterType,
+    CreatureType,
     ChallengeRating,
     Sense,
     Condition,

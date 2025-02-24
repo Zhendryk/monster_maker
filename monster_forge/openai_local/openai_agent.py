@@ -1,4 +1,5 @@
 import requests
+import os
 from pathlib import Path
 from openai import OpenAI
 from monster_forge.openai_local.constants import (
@@ -70,6 +71,8 @@ class OpenAIAgent:
             )
         if not allow_prompt_rewriting:
             prompt = f"{prompt}. I NEED to test how the tool works with extremely simple prompts. DO NOT add any detail, just use it AS-IS."
+        if not download_filepath.parent.exists():
+            os.makedirs(download_filepath.parent, exist_ok=True)
         response = self._client.images.generate(
             model=model.api_name,
             prompt=prompt,

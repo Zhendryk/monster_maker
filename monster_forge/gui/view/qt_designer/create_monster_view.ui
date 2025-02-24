@@ -116,27 +116,20 @@
        <string>Encounter Details</string>
       </attribute>
       <layout class="QGridLayout" name="gridLayout_4">
-       <item row="2" column="0">
+       <item row="3" column="0">
         <widget class="QLabel" name="_lbl_avg_party_level">
          <property name="text">
           <string>Average Party Level:</string>
          </property>
         </widget>
        </item>
-       <item row="0" column="0">
-        <widget class="QLabel" name="_lbl_encounter_size">
-         <property name="text">
-          <string>Encounter Size:</string>
-         </property>
-        </widget>
-       </item>
-       <item row="1" column="1">
+       <item row="2" column="1">
         <widget class="QComboBox" name="cb_encounter_difficulty"/>
        </item>
-       <item row="0" column="1">
+       <item row="1" column="1">
         <widget class="QComboBox" name="cb_encounter_size"/>
        </item>
-       <item row="2" column="1">
+       <item row="3" column="1">
         <widget class="QSpinBox" name="spinbox_avg_party_level">
          <property name="minimum">
           <number>1</number>
@@ -146,21 +139,21 @@
          </property>
         </widget>
        </item>
-       <item row="1" column="0">
-        <widget class="QLabel" name="_lbl_encounter_difficulty">
-         <property name="text">
-          <string>Encounter Difficulty:</string>
-         </property>
-        </widget>
-       </item>
-       <item row="3" column="0">
+       <item row="4" column="0">
         <widget class="QLabel" name="_lbl_num_pcs">
          <property name="text">
           <string>Number of Player Characters:</string>
          </property>
         </widget>
        </item>
-       <item row="3" column="1">
+       <item row="1" column="0">
+        <widget class="QLabel" name="_lbl_encounter_size">
+         <property name="text">
+          <string>Encounter Size:</string>
+         </property>
+        </widget>
+       </item>
+       <item row="4" column="1">
         <widget class="QSpinBox" name="spinbox_num_pcs">
          <property name="minimum">
           <number>1</number>
@@ -170,6 +163,27 @@
          </property>
          <property name="value">
           <number>1</number>
+         </property>
+        </widget>
+       </item>
+       <item row="2" column="0">
+        <widget class="QLabel" name="_lbl_encounter_difficulty">
+         <property name="text">
+          <string>Encounter Difficulty:</string>
+         </property>
+        </widget>
+       </item>
+       <item row="0" column="0">
+        <widget class="QLabel" name="_lbl_has_lair">
+         <property name="text">
+          <string>Has Lair:</string>
+         </property>
+        </widget>
+       </item>
+       <item row="0" column="1">
+        <widget class="QCheckBox" name="checkbox_has_lair">
+         <property name="text">
+          <string/>
          </property>
         </widget>
        </item>
