@@ -345,28 +345,75 @@ class MonsterCreationController(QWidget):
             if load_successful:
                 self._view.lineedit_name.setText(self.monster.name)
                 self._view.textedit_description.setText(self.monster.description)
-                # self._view.cb_encounter_size
-                # self._view.cb_encounter_difficulty
+                idx = next(
+                    (
+                        i
+                        for i in range(self._view.cb_encounter_size.count())
+                        if self._view.cb_encounter_size.itemText(i)
+                        == self.encounter.size.display_name
+                    ),
+                    -1,
+                )
+                self._view.cb_encounter_size.setCurrentIndex(idx)
+                idx = next(
+                    (
+                        i
+                        for i in range(self._view.cb_encounter_difficulty.count())
+                        if self._view.cb_encounter_difficulty.itemText(i)
+                        == self.encounter.difficulty.display_name
+                    ),
+                    -1,
+                )
+                self._view.cb_encounter_difficulty.setCurrentIndex(idx)
                 self._view.spinbox_avg_party_level.setValue(
                     self.encounter.avg_party_level
                 )
                 self._view.spinbox_num_pcs.setValue(self.encounter.num_pcs)
-                # self._view.cb_creature_type
-                # self._view.cb_alignment
-                # self._view.cb_size
+                idx = next(
+                    (
+                        i
+                        for i in range(self._view.cb_creature_type.count())
+                        if self._view.cb_creature_type.itemText(i)
+                        == self.monster.creature_type.display_name
+                    ),
+                    -1,
+                )
+                self._view.cb_creature_type.setCurrentIndex(idx)
+                idx = next(
+                    (
+                        i
+                        for i in range(self._view.cb_alignment.count())
+                        if self._view.cb_alignment.itemText(i)
+                        == self.monster.alignment.display_name
+                    ),
+                    -1,
+                )
+                self._view.cb_alignment.setCurrentIndex(idx)
+                idx = next(
+                    (
+                        i
+                        for i in range(self._view.cb_size.count())
+                        if self._view.cb_size.itemText(i)
+                        == self.monster.size.display_name
+                    ),
+                    -1,
+                )
+                self._view.cb_size.setCurrentIndex(idx)
                 self._calc_cr()
                 self._view.spinbox_walk_speed.setValue(
-                    self.monster.speed[SpeedType.WALKING]
+                    self.monster.speed.get(SpeedType.WALKING, 0)
                 )
                 self._view.spinbox_swim_speed.setValue(
-                    self.monster.speed[SpeedType.SWIM]
+                    self.monster.speed.get(SpeedType.SWIM, 0)
                 )
                 self._view.spinbox_climb_speed.setValue(
-                    self.monster.speed[SpeedType.CLIMB]
+                    self.monster.speed.get(SpeedType.CLIMB, 0)
                 )
-                self._view.spinbox_fly_speed.setValue(self.monster.speed[SpeedType.FLY])
+                self._view.spinbox_fly_speed.setValue(
+                    self.monster.speed.get(SpeedType.FLY, 0)
+                )
                 self._view.spinbox_burrow_speed.setValue(
-                    self.monster.speed[SpeedType.BURROW]
+                    self.monster.speed.get(SpeedType.BURROW, 0)
                 )
                 self._view.spinbox_str.setValue(
                     self.monster.ability_scores.scores[Ability.STRENGTH]
