@@ -335,10 +335,110 @@ class MonsterCreationController(QWidget):
             "Statblock Files (*.statblock.json)",
         )
         if file_path:
+            load_successful = False
             with open(file_path, "r") as imported_file:
                 data = imported_file.read()
                 unpickled_monster: PickledMonsterData = jsonpickle.decode(data)
-                # TODO: Load into UI
+                self.monster = unpickled_monster.monster
+                self.encounter = unpickled_monster.encounter
+                load_successful = True
+            if load_successful:
+                self._view.lineedit_name.setText(self.monster.name)
+                self._view.textedit_description.setText(self.monster.description)
+                # self._view.cb_encounter_size
+                # self._view.cb_encounter_difficulty
+                self._view.spinbox_avg_party_level.setValue(
+                    self.encounter.avg_party_level
+                )
+                self._view.spinbox_num_pcs.setValue(self.encounter.num_pcs)
+                # self._view.cb_creature_type
+                # self._view.cb_alignment
+                # self._view.cb_size
+                self._calc_cr()
+                self._view.spinbox_walk_speed.setValue(
+                    self.monster.speed[SpeedType.WALKING]
+                )
+                self._view.spinbox_swim_speed.setValue(
+                    self.monster.speed[SpeedType.SWIM]
+                )
+                self._view.spinbox_climb_speed.setValue(
+                    self.monster.speed[SpeedType.CLIMB]
+                )
+                self._view.spinbox_fly_speed.setValue(self.monster.speed[SpeedType.FLY])
+                self._view.spinbox_burrow_speed.setValue(
+                    self.monster.speed[SpeedType.BURROW]
+                )
+                self._view.spinbox_str.setValue(
+                    self.monster.ability_scores.scores[Ability.STRENGTH]
+                )
+                self._view.checkbox_prof_st_str.setChecked(
+                    self.monster.saving_throws.get(Ability.STRENGTH, Proficiency.NORMAL)
+                    == Proficiency.PROFICIENT
+                )
+                self._view.spinbox_dex.setValue(
+                    self.monster.ability_scores.scores[Ability.DEXTERITY]
+                )
+                self._view.checkbox_prof_st_dex.setChecked(
+                    self.monster.saving_throws.get(
+                        Ability.DEXTERITY, Proficiency.NORMAL
+                    )
+                    == Proficiency.PROFICIENT
+                )
+                self._view.spinbox_con.setValue(
+                    self.monster.ability_scores.scores[Ability.CONSTITUTION]
+                )
+                self._view.checkbox_prof_st_con.setChecked(
+                    self.monster.saving_throws.get(
+                        Ability.CONSTITUTION, Proficiency.NORMAL
+                    )
+                    == Proficiency.PROFICIENT
+                )
+                self._view.spinbox_int.setValue(
+                    self.monster.ability_scores.scores[Ability.INTELLIGENCE]
+                )
+                self._view.checkbox_prof_st_int.setChecked(
+                    self.monster.saving_throws.get(
+                        Ability.INTELLIGENCE, Proficiency.NORMAL
+                    )
+                    == Proficiency.PROFICIENT
+                )
+                self._view.spinbox_wis.setValue(
+                    self.monster.ability_scores.scores[Ability.WISDOM]
+                )
+                self._view.checkbox_prof_st_wis.setChecked(
+                    self.monster.saving_throws.get(Ability.WISDOM, Proficiency.NORMAL)
+                    == Proficiency.PROFICIENT
+                )
+                self._view.spinbox_cha.setValue(
+                    self.monster.ability_scores.scores[Ability.CHARISMA]
+                )
+                self._view.checkbox_prof_st_cha.setChecked(
+                    self.monster.saving_throws.get(Ability.CHARISMA, Proficiency.NORMAL)
+                    == Proficiency.PROFICIENT
+                )
+                self._view.listwidget_skills.clear()
+                for skill, prof in self.monster.skills.items():
+                    self._add_skill(skill, prof)
+                self._view.listwidget_damage.clear()
+                for dmg_type, res in self.monster.damage_resistances.items():
+                    self._add_damage(dmg_type, res)
+                self._view.listwidget_conditions.clear()
+                for condition in self.monster.condition_resistances.keys():
+                    self._add_condition_immunity(condition)
+                self._view.listwidget_senses.clear()
+                for sense, range_ft in self.monster.senses.items():
+                    self._add_sense(sense, range_ft)
+                self._view.listwidget_languages.clear()
+                for language in self.monster.languages:
+                    self._add_language(language)
+                if self.monster.telepathy is not None:
+                    self._view.checkbox_telepathy.setChecked(self.monster.telepathy[0])
+                    self._view.spinbox_telepathy_range.setValue(
+                        self.monster.telepathy[1]
+                    )
+                    self._view.spinbox_telepathy_range.setEnabled(
+                        self.monster.telepathy[0]
+                    )
 
     def _export_monster(self) -> None:
         pickled_monster_data = PickledMonsterData(self.monster, self.encounter)
