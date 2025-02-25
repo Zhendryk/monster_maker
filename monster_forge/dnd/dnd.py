@@ -53,6 +53,12 @@ class Condition(Enum):
                 return x
         raise ValueError(f"invalid Condition: {name}")
 
+    @staticmethod
+    def is_valid_display_name(name: str) -> bool:
+        return "_".join([c for c in name.split(" ")]).lower() in [
+            c.name.lower() for c in Condition
+        ]
+
 
 class DamageType(Enum):
     ACID = auto()
@@ -396,6 +402,15 @@ class AbilityScores:
     @property
     def charisma_modifier(self) -> int:
         return self._calculate_modifier(self.scores[Ability.CHARISMA])
+
+    @property
+    def display_str(self) -> str:
+        return ", ".join(
+            [
+                f"{ability.display_name}:{score}"
+                for ability, score in self.scores.items()
+            ]
+        )
 
 
 class Language(Enum):
@@ -908,24 +923,24 @@ class Monster:
 
     @property
     def in_lair(self) -> bool | None:
-        if self._requirements_met("challenge_rating"):
+        if self.has_required_fields(["challenge_rating"]):
             return self.challenge_rating.in_lair
         return None
 
     @in_lair.setter
     def in_lair(self, value: bool) -> None:
-        if self._requirements_met("challenge_rating"):
+        if self.has_required_fields(["challenge_rating"]):
             self.challenge_rating.in_lair = value
 
     @property
     def strength(self) -> int | None:
-        if self._requirements_met("ability_scores"):
+        if self.has_required_fields(["ability_scores"]):
             return self.ability_scores.scores[Ability.STRENGTH]
         return None
 
     @property
     def strength_mod(self) -> int | None:
-        if self._requirements_met("ability_scores"):
+        if self.has_required_fields(["ability_scores"]):
             return self.ability_scores.strength_modifier
 
     @property
@@ -1241,7 +1256,23 @@ class Monster:
     def legendary_actions_display(self) -> str:
         return ""  # TODO: Implement me
 
-    def _requirements_met(self, required_fields: Sequence[str]) -> bool:
+    @property
+    def all_available_prompt_info(self) -> str:
+        strs = []
+        for lbl, value in {
+            "name": self.name,
+            "description": self.description,
+            "habitat": self.habitat,
+            "creature type": self.creature_type.display_name or None,
+            "alignment": self.alignment.display_name or None,
+            "size": self.size.display_name or None,
+            "ability scores": self.ability_scores.display_str or None,
+        }.items():
+            if value is not None:
+                strs.append(f"The monster's {lbl} is: {value}")
+        return ". ".join(strs)
+
+    def has_required_fields(self, required_fields: list[str]) -> bool:
         return not any(
             (
                 getattr(self, required_field, None) is None
@@ -1249,7 +1280,10 @@ class Monster:
             )
         )
 
-    def as_homebrewery_v3_markdown(self, wide_statblock: bool = False) -> str:
+    def as_homebrewery_v3_markdown_2014(self, wide_statblock: bool = False) -> str:
+        return ""
+
+    def as_homebrewery_v3_markdown_2024(self, wide_statblock: bool = False) -> str:
         return (
             f"{{{{monster,frame{',wide' if wide_statblock else ''}\n"
             f"## {self.name}\n"

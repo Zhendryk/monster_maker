@@ -1,4 +1,4 @@
-from PyQt5.QtWidgets import QWidget
+from PyQt5.QtWidgets import QWidget, QFileDialog
 from PyQt5.QtGui import QPixmap
 from collections.abc import Sequence
 from PyQt5.QtCore import QObject, Qt
@@ -28,6 +28,8 @@ from monster_forge.dnd.dnd import (
 from pathlib import Path
 from functools import partial
 from random import randint
+import jsonpickle
+from monster_forge.pickled_data import PickledMonsterData
 
 # Masquerade Demon
 # A demon who blends into the higher eschelons of society to hunt its prey. It regularly attends soirees and other elegant events to lure victims in with its charming personality and impeccable decorum.
@@ -150,26 +152,30 @@ class MonsterCreationController(QWidget):
         self._view.btn_suggest_size.clicked.connect(self._suggest_size)
         self._view.btn_generate_artwork.clicked.connect(self._generate_artwork)
         self._view.btn_skills_proficient.clicked.connect(
-            partial(self._add_skill, Proficiency.PROFICIENT)
+            partial(self._btn_add_skill_pressed, Proficiency.PROFICIENT)
         )
         self._view.btn_skills_expert.clicked.connect(
-            partial(self._add_skill, Proficiency.EXPERTISE)
+            partial(self._btn_add_skill_pressed, Proficiency.EXPERTISE)
         )
-        self._view.btn_skills_remove.clicked.connect(self._remove_skill)
+        self._view.btn_skills_remove.clicked.connect(self._btn_remove_skill_pressed)
         self._view.btn_damage_resistant.clicked.connect(
-            partial(self._add_damage, Resistance.RESISTANT)
+            partial(self._btn_add_damage_pressed, Resistance.RESISTANT)
         )
         self._view.btn_damage_immune.clicked.connect(
-            partial(self._add_damage, Resistance.IMMUNE)
+            partial(self._btn_add_damage_pressed, Resistance.IMMUNE)
         )
-        self._view.btn_damage_remove.clicked.connect(self._remove_damage)
-        self._view.btn_languages_add.clicked.connect(self._add_language)
-        self._view.btn_languages_remove.clicked.connect(self._remove_language)
-        self._view.btn_senses_add.clicked.connect(self._add_sense)
-        self._view.btn_senses_remove.clicked.connect(self._remove_sense)
-        self._view.btn_conditions_immune.clicked.connect(self._add_condition_immunity)
+        self._view.btn_damage_remove.clicked.connect(self._btn_remove_damage_pressed)
+        self._view.btn_languages_add.clicked.connect(self._btn_add_language_pressed)
+        self._view.btn_languages_remove.clicked.connect(
+            self._btn_remove_language_pressed
+        )
+        self._view.btn_senses_add.clicked.connect(self._btn_add_sense_pressed)
+        self._view.btn_senses_remove.clicked.connect(self._btn_remove_sense_pressed)
+        self._view.btn_conditions_immune.clicked.connect(
+            self._btn_add_condition_immunity_pressed
+        )
         self._view.btn_conditions_remove.clicked.connect(
-            self._remove_condition_immunity
+            self._btn_remove_condition_immunity_pressed
         )
         self._view.btn_suggest_ability_scores.clicked.connect(
             self._suggest_ability_scores
@@ -321,10 +327,31 @@ class MonsterCreationController(QWidget):
             )
 
     def _import_monster(self) -> None:
-        pass  # TODO: Implement me
+        file_dialog = QFileDialog()
+        file_path, _ = file_dialog.getOpenFileName(
+            self,
+            "Open File",
+            str(self._output_folder),
+            "Statblock Files (*.statblock.json)",
+        )
+        if file_path:
+            with open(file_path, "r") as imported_file:
+                data = imported_file.read()
+                unpickled_monster: PickledMonsterData = jsonpickle.decode(data)
+                # TODO: Load into UI
 
     def _export_monster(self) -> None:
-        pass  # TODO: Implement me
+        pickled_monster_data = PickledMonsterData(self.monster, self.encounter)
+        pickled_monster = jsonpickle.encode(pickled_monster_data)
+        filepath = self._output_folder / f"{self.monster.name}.statblock.json"
+        with open(filepath, "w") as export_file:
+            export_file.write(pickled_monster)
+        print(f"Exported monster ({self.monster.name}) to: {filepath}")
+
+    def _generate_text(self, what_to_generate: str, response_constraints: str) -> str:
+        return self._mm._openai_agent.generate_text(
+            f"Given the provided information about a new D&D 5E 2024 monster, suggest {what_to_generate}. Your response must be {response_constraints} and have no other text whatsoever. {self.monster.all_available_prompt_info}"
+        )
 
     def _generate_all(self) -> None:
         if not self.monster.description:
@@ -338,12 +365,14 @@ class MonsterCreationController(QWidget):
         self._suggest_encounter()
         self._calc_cr()
         self._suggest_ability_scores()
+        self._suggest_skill_proficiencies()
+        self._suggest_damage_resistances()
+        self._suggest_condition_immunities()
+        self._suggest_languages()
+        self._suggest_speed()
+        self._suggest_senses()
+        self._suggest_telepathy()
         self._generate_artwork()
-        # self._suggest_skill_proficiencies()
-        # self._suggest_damage_resistances()
-        # self._suggest_condition_immunities()
-        # self._suggest_languages()
-        # self._suggest_speed()
 
     def _refine_description(self) -> None:
         print("Refining monster concept...")
@@ -400,7 +429,7 @@ class MonsterCreationController(QWidget):
             return
         print("Suggesting alignment...")
         suggested_alignment = self._mm._openai_agent.generate_text(
-            f"Given the provided D&D monster name and description, suggest an appropriate alignment for it. Your response must be one of the following alignments and nothing else: {', '.join([a.display_name for a in Alignment])}. The name of the monster is: {self.monster.name}. The description of the monster is: {self.monster.description}"
+            f"Given the provided D&D 5E 2024 monster name and description, suggest an appropriate alignment for it. Your response must be one of the following alignments and nothing else: {', '.join([a.display_name for a in Alignment])}. The name of the monster is: {self.monster.name}. The description of the monster is: {self.monster.description}"
         )
         suggested_alignment_enum = Alignment.from_display_name(suggested_alignment)
         print(f"Suggested Alignment is: {suggested_alignment_enum.display_name}")
@@ -530,9 +559,141 @@ class MonsterCreationController(QWidget):
         self._view.spinbox_avg_party_level.setValue(suggested_avg_party_level)
         print(f"Suggested average party level: {suggested_avg_party_level}")
 
-    def _add_skill(self, proficiency_level: Proficiency) -> None:
-        skill_text = self._view.cb_skills.currentText()
-        skill = Skill.from_display_name(skill_text)
+    def _suggest_skill_proficiencies(self) -> None:
+        print("Suggesting skill proficiencies...")
+        suggested_skill_proficiencies = self._generate_text(
+            "a comma separated list of key:value pairs where the key is a skill and the value is the level of proficiency the creature has in that skill",
+            f"a comma separated list of key:value pairs where the key must be one of the following: {', '.join([s.display_name for s in Skill])} and the value must be one of the following: {', '.join(p.display_name for p in Proficiency if p != Proficiency.NORMAL)}",
+        )
+        print(f"Suggested skill proficiencies are: {suggested_skill_proficiencies}")
+        self._view.listwidget_skills.clear()
+        for ssp in suggested_skill_proficiencies.split(","):
+            split = ssp.strip().split(":")
+            skill_text = split[0].strip()
+            skill = Skill.from_display_name(skill_text)
+            proficiency_text = split[1].strip()
+            proficiency = Proficiency.from_display_name(proficiency_text)
+            self._add_skill(skill, proficiency)
+
+    def _suggest_damage_resistances(self) -> None:
+        print("Suggesting damage resistances and immunities...")
+        suggested_damage_resistances = self._generate_text(
+            "a comma separated list of key:value pairs where the key is a damage type and the value is the type of resistance the creature has to the damage",
+            f"a comma separated list of key:value pairs where the key must be one of the following: {', '.join([dt.display_name for dt in DamageType])} and the value must be one of the following: {', '.join(rt.display_name for rt in Resistance if rt != Resistance.NORMAL)}",
+        )
+        print(f"Suggested damage resistances are: {suggested_damage_resistances}")
+        self._view.listwidget_damage.clear()
+        for sdr in suggested_damage_resistances.split(","):
+            split = sdr.strip().split(":")
+            damage_type_text = split[0].strip()
+            damage_type = DamageType.from_display_name(damage_type_text)
+            resistance_text = split[1].strip()
+            resistance = Resistance.from_display_name(resistance_text)
+            self._add_damage(damage_type, resistance)
+
+    def _suggest_senses(self) -> None:
+        print("Suggesting senses...")
+        suggested_senses = self._generate_text(
+            "a comma separated list of key:value pairs where the key is a sense that creature would possess and the value is an integer representing the range in feet of that sense",
+            f"a comma separated list of key:value pairs where the key is one of the following options: {', '.join([s.display_name for s in Sense])} and the value is an integer between 0 and 300 and is divisible by 5",
+        )
+        print(f"Suggested senses are: {suggested_senses}")
+        self._view.listwidget_senses.clear()
+        for ss in suggested_senses.split(","):
+            split = ss.strip().split(":")
+            sense_text = split[0].strip()
+            sense = Sense.from_display_name(sense_text)
+            sense_range = int(split[1].strip())
+            if sense_range % 5 != 0 or sense_range <= 0:
+                sense_range = 0
+            self._add_sense(sense, sense_range)
+
+    def _suggest_telepathy(self) -> None:
+        print("Suggesting telepathy capabilities...")
+        telepathy_suggestion = self._generate_text(
+            "a single key:value pair where the key is True or False if the creature has telepathy and the value is the range of that telepathy in feet",
+            "a single key:value pair where the key is True if the creature has telepathy and False if it does not, and the value is an integer between 0 and 300 inclusive and is divisible by 5",
+        )
+        split = telepathy_suggestion.split(":")
+        has_telepathy = True if split[0].strip().lower() == "true" else False
+        telepathy_range_ft = int(split[1].strip())
+        print(f"Suggested telepathy: {has_telepathy} - {telepathy_range_ft} ft.")
+        self.monster.telepathy = (has_telepathy, telepathy_range_ft)
+        self._view.checkbox_telepathy.setChecked(has_telepathy)
+        self._view.spinbox_telepathy_range.setValue(telepathy_range_ft)
+        self._view.spinbox_telepathy_range.setEnabled(has_telepathy)
+
+    def _suggest_condition_immunities(self) -> None:
+        suggested_condition_immunities = self._generate_text(
+            "a comma separated list of conditions that creature would be immune to",
+            f"a comma separated list of values from the following options: {', '.join([c.display_name for c in Condition])}",
+        )
+        print(f"Suggested condition immunities are: {suggested_condition_immunities}")
+        condition_immunities = sorted(
+            [
+                Condition.from_display_name(sc.strip())
+                for sc in suggested_condition_immunities.split(",")
+                if Condition.is_valid_display_name(sc)
+            ],
+            key=lambda x: x.display_name.lower(),
+        )
+        self.monster.condition_resistances = {
+            condition: Resistance.IMMUNE for condition in condition_immunities
+        }
+        self._view.listwidget_conditions.clear()
+        for condition in condition_immunities:
+            self._add_condition_immunity(condition)
+
+    def _suggest_languages(self) -> None:
+        if self.monster.name is None:
+            print("Creature does not yet have a name, skipping...")
+            return
+        if self.monster.description is None:
+            print("Creature does not yet have a description, skipping...")
+            return
+        print("Suggesting languages...")
+        suggested_languages = self._mm._openai_agent.generate_text(
+            f"Given the provided D&D 5E 2024 monster name and description, suggest a comma separated list of languages that creature would know. Your response must be a comma separated list of values from the following options: {', '.join([l.display_name for l in Language])} and have no other text whatsoever. The name of the monster is: {self.monster.name}. The description of the monster is: {self.monster.description}"
+        )
+        print(f"Suggested languages are: {suggested_languages}")
+        languages = sorted(
+            [
+                Language.from_display_name(sl.strip())
+                for sl in suggested_languages.split(",")
+            ],
+            key=lambda x: x.display_name.lower(),
+        )
+        self.monster.languages.clear()
+        self._view.listwidget_languages.clear()
+        for language in languages:
+            self._add_language(language)
+
+    def _suggest_speed(self) -> None:
+        print("Suggesting speed...")
+        suggested_speed = self._generate_text(
+            "a comma separated list of key:value pairs representing the speed values appropriate for the monster.",
+            f"a comma separated list of key:value pairs where the key value is one of the following: {', '.join([st.display_name for st in SpeedType])}, and the values are integers between 0-200 that are divisble by 5",
+        )
+        print(f"Suggested speeds are: {suggested_speed}")
+        ui_cache = {
+            SpeedType.WALKING: self._view.spinbox_walk_speed,
+            SpeedType.SWIM: self._view.spinbox_swim_speed,
+            SpeedType.CLIMB: self._view.spinbox_climb_speed,
+            SpeedType.FLY: self._view.spinbox_fly_speed,
+            SpeedType.BURROW: self._view.spinbox_burrow_speed,
+        }
+        self.monster.speed.clear()
+        for ss in suggested_speed.split(","):
+            split = ss.strip().split(":")
+            speed_type_text = split[0]
+            speed = SpeedType.from_display_name(speed_type_text)
+            speed_range = int(split[1])
+            if speed_range % 5 != 0 or speed_range <= 0:
+                speed_range = 0
+            self.monster.speed[speed] = speed_range
+            ui_cache[speed].setValue(speed_range)
+
+    def _add_skill(self, skill: Skill, proficiency_level: Proficiency) -> None:
         self.monster.skills[skill] = proficiency_level
         if any(
             (
@@ -550,27 +711,33 @@ class MonsterCreationController(QWidget):
             f"{skill.display_name} ({proficiency_level.display_name})"
         )
 
-    def _remove_skill(self) -> None:
+    def _btn_add_skill_pressed(self, proficiency_level: Proficiency) -> None:
         skill_text = self._view.cb_skills.currentText()
         skill = Skill.from_display_name(skill_text)
+        self._add_skill(skill, proficiency_level)
+
+    def _remove_skill(self, skill: Skill) -> None:
         if skill in self.monster.skills:
             self.monster.skills.pop(skill)
-        idx_to_remove = None
-        for i in range(self._view.listwidget_skills.count()):
-            item_text: str = self._view.listwidget_skills.item(i).data(
-                Qt.ItemDataRole.DisplayRole
-            )
-            if item_text.startswith(skill.display_name):
-                idx_to_remove = i
-                break
-        if idx_to_remove is None:
-            print(f'Cannot find index for "{skill.display_name}", skipping...')
-            return
-        self._view.listwidget_skills.takeItem(idx_to_remove)
+        idx_to_remove = next(
+            (
+                i
+                for i in range(self._view.listwidget_skills.count())
+                if self._view.listwidget_languages.item(i)
+                .text()
+                .startswith(skill.display_name)
+            ),
+            None,
+        )
+        if idx_to_remove is not None:
+            self._view.listwidget_skills.takeItem(idx_to_remove)
 
-    def _add_language(self) -> None:
-        lang_text = self._view.cb_languages.currentText()
-        language = Language.from_display_name(lang_text)
+    def _btn_remove_skill_pressed(self) -> None:
+        skill_text = self._view.cb_skills.currentText()
+        skill = Skill.from_display_name(skill_text)
+        self._remove_skill(skill)
+
+    def _add_language(self, language: Language) -> None:
         if language not in self.monster.languages:
             self.monster.languages.append(language)
         if any(
@@ -581,69 +748,84 @@ class MonsterCreationController(QWidget):
                 for i in range(self._view.listwidget_languages.count())
             )
         ):
-            print(f'"{language.display_name}" already exists, not adding duplicate...')
+            print("Language already in UI, skipping...")
             return
         self._view.listwidget_languages.addItem(language.display_name)
 
-    def _remove_language(self) -> None:
-        lang_text = self._view.cb_languages.currentText()
-        language = Language.from_display_name(lang_text)
+    def _remove_language(self, language: Language) -> None:
         if language in self.monster.languages:
             self.monster.languages.remove(language)
-        idx_to_remove = None
-        for i in range(self._view.listwidget_languages.count()):
-            item_text: str = self._view.listwidget_languages.item(i).data(
-                Qt.ItemDataRole.DisplayRole
-            )
-            if item_text.startswith(language.display_name):
-                idx_to_remove = i
-                break
-        if idx_to_remove is None:
-            print(f'Cannot find index for "{language.display_name}", skipping...')
-            return
-        self._view.listwidget_languages.takeItem(idx_to_remove)
+        idx_to_remove = next(
+            (
+                i
+                for i in range(self._view.listwidget_languages.count())
+                if self._view.listwidget_languages.item(i)
+                .text()
+                .startswith(language.display_name)
+            ),
+            None,
+        )
+        if idx_to_remove is not None:
+            self._view.listwidget_languages.takeItem(idx_to_remove)
 
-    def _add_damage(self, resistance_level: Resistance) -> None:
-        dmg_text = self._view.cb_damage.currentText()
-        dmg_type = DamageType.from_display_name(dmg_text)
-        self.monster.damage_resistances[dmg_type] = resistance_level
+    def _btn_add_language_pressed(self) -> None:
+        lang_text = self._view.cb_languages.currentText()
+        language = Language.from_display_name(lang_text)
+        self._add_language(language)
+
+    def _btn_remove_language_pressed(self) -> None:
+        lang_text = self._view.cb_languages.currentText()
+        language = Language.from_display_name(lang_text)
+        self._remove_language(language)
+
+    def _add_damage(
+        self, damage_type: DamageType, resistance_level: Resistance
+    ) -> None:
+        self.monster.damage_resistances[damage_type] = resistance_level
         if any(
             (
                 self._view.listwidget_damage.item(i)
                 .data(Qt.ItemDataRole.DisplayRole)
-                .startswith(dmg_type.display_name)
+                .startswith(damage_type.display_name)
                 for i in range(self._view.listwidget_damage.count())
             )
         ):
             print(
-                f'"{dmg_type.display_name} ({resistance_level.display_name})" already exists, not adding duplicate...'
+                f'"{damage_type.display_name} ({resistance_level.display_name})" already exists, not adding duplicate...'
             )
             return
         self._view.listwidget_damage.addItem(
-            f"{dmg_type.display_name} ({resistance_level.display_name})"
+            f"{damage_type.display_name} ({resistance_level.display_name})"
         )
 
-    def _remove_damage(self) -> None:
+    def _btn_add_damage_pressed(self, resistance_level: Resistance) -> None:
         dmg_text = self._view.cb_damage.currentText()
         dmg_type = DamageType.from_display_name(dmg_text)
-        if dmg_type in self.monster.damage_resistances:
-            self.monster.damage_resistances.pop(dmg_type)
-        idx_to_remove = None
-        for i in range(self._view.listwidget_damage.count()):
-            item_text: str = self._view.listwidget_damage.item(i).data(
-                Qt.ItemDataRole.DisplayRole
-            )
-            if item_text.startswith(dmg_type.display_name):
-                idx_to_remove = i
-                break
-        if idx_to_remove is None:
-            print(f'Cannot find index for "{dmg_type.display_name}", skipping...')
-            return
-        self._view.listwidget_damage.takeItem(idx_to_remove)
+        self._add_damage(dmg_type, resistance_level)
 
-    def _add_sense(self) -> None:
-        sense_text = self._view.cb_senses.currentText()
-        sense = Sense.from_display_name(sense_text)
+    def _remove_damage(self, damage_type: DamageType) -> None:
+        if damage_type in self.monster.damage_resistances:
+            self.monster.damage_resistances.pop(damage_type)
+        idx_to_remove = next(
+            (
+                i
+                for i in range(self._view.listwidget_damage.count())
+                if self._view.listwidget_damage.item(i)
+                .text()
+                .startswith(damage_type.display_name)
+            ),
+            None,
+        )
+        if idx_to_remove is not None:
+            self._view.listwidget_damage.takeItem(idx_to_remove)
+
+    def _btn_remove_damage_pressed(self) -> None:
+        dmg_text = self._view.cb_damage.currentText()
+        dmg_type = DamageType.from_display_name(dmg_text)
+        self._remove_damage(dmg_type)
+
+    def _add_sense(self, sense: Sense, range_ft: int) -> None:
+        self.monster.senses[sense] = range_ft
         if any(
             (
                 self._view.listwidget_senses.item(i)
@@ -654,35 +836,58 @@ class MonsterCreationController(QWidget):
         ):
             print(f'"{sense.display_name}" already exists, not adding duplicate...')
             return
-        if self._view.spinbox_sense_range.value() <= 0:
-            print(f"Invalid value for sense range, skipping...")
-            return
-        self.monster.senses[sense] = self._view.spinbox_sense_range.value()
         self._view.listwidget_senses.addItem(
             f"{sense.display_name} - {self._view.spinbox_sense_range.value()}"
         )
 
-    def _remove_sense(self) -> None:
+    def _btn_add_sense_pressed(self) -> None:
         sense_text = self._view.cb_senses.currentText()
         sense = Sense.from_display_name(sense_text)
+        if self._view.spinbox_sense_range.value() <= 0:
+            print(f"Invalid value for sense range, skipping...")
+            return
+        self._add_sense(sense, self._view.spinbox_sense_range.value())
+
+    def _remove_sense(self, sense: Sense) -> None:
         if sense in self.monster.senses:
             self.monster.senses.pop(sense)
-        idx_to_remove = None
-        for i in range(self._view.listwidget_senses.count()):
-            item_text: str = self._view.listwidget_senses.item(i).data(
-                Qt.ItemDataRole.DisplayRole
-            )
-            if item_text.startswith(sense.display_name):
-                idx_to_remove = i
-                break
-        if idx_to_remove is None:
-            print(f'Cannot find index for "{sense.display_name}", skipping...')
-            return
-        self._view.listwidget_senses.takeItem(idx_to_remove)
+        idx_to_remove = next(
+            (
+                i
+                for i in range(self._view.listwidget_senses.count())
+                if self._view.listwidget_senses.item(i)
+                .text()
+                .startswith(sense.display_name)
+            ),
+            None,
+        )
+        if idx_to_remove is not None:
+            self._view.listwidget_senses.takeItem(idx_to_remove)
 
-    def _add_condition_immunity(self) -> None:
+    def _btn_remove_sense_pressed(self) -> None:
+        sense_text = self._view.cb_senses.currentText()
+        sense = Sense.from_display_name(sense_text)
+        self._remove_sense(sense)
+
+    def _add_condition_immunity(self, condition: Condition) -> None:
+        if condition not in self.monster.condition_resistances:
+            self.monster.condition_resistances[condition] = Resistance.IMMUNE
+        if any(
+            (
+                self._view.listwidget_conditions.item(i)
+                .data(Qt.ItemDataRole.DisplayRole)
+                .startswith(condition.display_name)
+                for i in range(self._view.listwidget_conditions.count())
+            )
+        ):
+            print("Condition already in UI, skipping...")
+            return
+        self._view.listwidget_conditions.addItem(condition.display_name)
+
+    def _btn_add_condition_immunity_pressed(self) -> None:
         condition_text = self._view.cb_conditions.currentText()
         condition = Condition.from_display_name(condition_text)
+        self._add_condition_immunity(condition)
         self.monster.condition_resistances[condition] = Resistance.IMMUNE
         if any(
             (
@@ -696,23 +901,26 @@ class MonsterCreationController(QWidget):
             return
         self._view.listwidget_conditions.addItem(f"{condition.display_name}")
 
-    def _remove_condition_immunity(self) -> None:
-        condition_text = self._view.cb_conditions.currentText()
-        condition = Condition.from_display_name(condition_text)
+    def _remove_condition_immunity(self, condition: Condition) -> None:
         if condition in self.monster.condition_resistances:
             self.monster.condition_resistances.pop(condition)
-        idx_to_remove = None
-        for i in range(self._view.listwidget_conditions.count()):
-            item_text: str = self._view.listwidget_conditions.item(i).data(
-                Qt.ItemDataRole.DisplayRole
-            )
-            if item_text.startswith(condition.display_name):
-                idx_to_remove = i
-                break
-        if idx_to_remove is None:
-            print(f'Cannot find index for "{condition.display_name}", skipping...')
-            return
-        self._view.listwidget_conditions.takeItem(idx_to_remove)
+        idx_to_remove = next(
+            (
+                i
+                for i in range(self._view.listwidget_conditions.count())
+                if self._view.listwidget_conditions.item(i)
+                .text()
+                .startswith(condition.display_name)
+            ),
+            None,
+        )
+        if idx_to_remove is not None:
+            self._view.listwidget_conditions.takeItem(idx_to_remove)
+
+    def _btn_remove_condition_immunity_pressed(self) -> None:
+        condition_text = self._view.cb_conditions.currentText()
+        condition = Condition.from_display_name(condition_text)
+        self._remove_condition_immunity(condition)
 
     def _generate_artwork(self) -> None:
         print("Generating artwork...")
@@ -750,7 +958,7 @@ class MonsterCreationController(QWidget):
         elif not output_path.exists():
             os.makedirs(output_path, exist_ok=True)
         with open(output_filepath, "w") as markdown_file:
-            markdown_txt = self.monster.as_homebrewery_v3_markdown(
+            markdown_txt = self.monster.as_homebrewery_v3_markdown_2024(
                 wide_statblock=wide_statblock
             )
             markdown_file.write(markdown_txt)
