@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 
-# Form implementation generated from reading ui file 'c:\Users\Jon\Desktop\monster_maker\monster_forge\gui\\view\qt_designer\monster_maker_mainwindow_view.ui'
+# Form implementation generated from reading ui file 'C:\Users\Jon\Desktop\monster_maker\monster_forge\gui\\view\qt_designer\monster_maker_mainwindow_view.ui'
 #
 # Created by: PyQt5 UI code generator 5.15.9
 #

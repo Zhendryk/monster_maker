@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 
-# Form implementation generated from reading ui file 'c:\Users\Jon\Desktop\monster_maker\monster_forge\gui\\view\qt_designer\create_monster_view.ui'
+# Form implementation generated from reading ui file 'C:\Users\Jon\Desktop\monster_maker\monster_forge\gui\\view\qt_designer\create_monster_view.ui'
 #
 # Created by: PyQt5 UI code generator 5.15.9
 #
@@ -426,6 +426,30 @@ class Ui_CreateMonsterView(object):
         self._lbl_telepathy_ft.setObjectName("_lbl_telepathy_ft")
         self.gridLayout_5.addWidget(self._lbl_telepathy_ft, 5, 4, 1, 1)
         self.tabwidget_stats.addTab(self.tab_senses_languages_immunities, "")
+        self.tab_traits = QtWidgets.QWidget()
+        self.tab_traits.setObjectName("tab_traits")
+        self.verticalLayout_3 = QtWidgets.QVBoxLayout(self.tab_traits)
+        self.verticalLayout_3.setObjectName("verticalLayout_3")
+        self.hl_trait_form = QtWidgets.QHBoxLayout()
+        self.hl_trait_form.setObjectName("hl_trait_form")
+        self._lbl_trait_name = QtWidgets.QLabel(self.tab_traits)
+        self._lbl_trait_name.setObjectName("_lbl_trait_name")
+        self.hl_trait_form.addWidget(self._lbl_trait_name)
+        self.lineedit_trait_name = QtWidgets.QLineEdit(self.tab_traits)
+        self.lineedit_trait_name.setObjectName("lineedit_trait_name")
+        self.hl_trait_form.addWidget(self.lineedit_trait_name)
+        self._lbl_trait_description = QtWidgets.QLabel(self.tab_traits)
+        self._lbl_trait_description.setObjectName("_lbl_trait_description")
+        self.hl_trait_form.addWidget(self._lbl_trait_description)
+        self.textedit_trait_description = QtWidgets.QTextEdit(self.tab_traits)
+        self.textedit_trait_description.setMaximumSize(QtCore.QSize(16777215, 120))
+        self.textedit_trait_description.setObjectName("textedit_trait_description")
+        self.hl_trait_form.addWidget(self.textedit_trait_description)
+        self.btn_add_trait = QtWidgets.QPushButton(self.tab_traits)
+        self.btn_add_trait.setObjectName("btn_add_trait")
+        self.hl_trait_form.addWidget(self.btn_add_trait)
+        self.verticalLayout_3.addLayout(self.hl_trait_form)
+        self.tabwidget_stats.addTab(self.tab_traits, "")
         self.tab_artwork = QtWidgets.QWidget()
         self.tab_artwork.setObjectName("tab_artwork")
         self.verticalLayout_2 = QtWidgets.QVBoxLayout(self.tab_artwork)
@@ -528,6 +552,10 @@ class Ui_CreateMonsterView(object):
         self._lbl_range.setText(_translate("CreateMonsterView", "Range:"))
         self._lbl_telepathy_ft.setText(_translate("CreateMonsterView", "ft."))
         self.tabwidget_stats.setTabText(self.tabwidget_stats.indexOf(self.tab_senses_languages_immunities), _translate("CreateMonsterView", "Senses, Languages, Immunities"))
+        self._lbl_trait_name.setText(_translate("CreateMonsterView", "Name:"))
+        self._lbl_trait_description.setText(_translate("CreateMonsterView", "Description:"))
+        self.btn_add_trait.setText(_translate("CreateMonsterView", "Add Trait"))
+        self.tabwidget_stats.setTabText(self.tabwidget_stats.indexOf(self.tab_traits), _translate("CreateMonsterView", "Traits"))
         self.btn_generate_artwork.setText(_translate("CreateMonsterView", "Generate"))
         self.tabwidget_stats.setTabText(self.tabwidget_stats.indexOf(self.tab_artwork), _translate("CreateMonsterView", "Artwork"))
         self.btn_import.setText(_translate("CreateMonsterView", "Import"))

@@ -1,7 +1,9 @@
-from .dnd import (
-    Monster,
+from .ability_scores import AbilityScores
+from .challenge_rating import ChallengeRating
+from .dice import Dice
+from .encounter import Encounter, EncounterDifficulty, EncounterSize
+from .enums import (
     CreatureType,
-    ChallengeRating,
     Sense,
     Condition,
     DamageType,
@@ -11,10 +13,9 @@ from .dnd import (
     SpeedType,
     RollType,
     Die,
-    Dice,
     Ability,
     Size,
     Language,
     Alignment,
-    AbilityScores,
 )
+from .monster import Monster

@@ -1,0 +1,54 @@
+from __future__ import annotations
+from dataclasses import dataclass
+from monster_forge.dnd.enums import Die, RollType, Size
+from monster_forge.dnd.ability_scores import AbilityScores
+
+
+@dataclass
+class Dice:
+    dice: dict[Die, int]
+
+    @property
+    def value(self) -> int:
+        return sum([dt.roll(self.dice[dt]) for dt in self.dice])
+
+    @property
+    def average_value(self) -> int:
+        return sum(
+            [dt.roll(self.dice[dt], roll_type=RollType.AVERAGE) for dt in self.dice]
+        )
+
+    @property
+    def max_value(self) -> int:
+        return sum([dt.roll(self.dice[dt], roll_type=RollType.MAX) for dt in self.dice])
+
+    @property
+    def min_value(self) -> int:
+        return sum([dt.roll(self.dice[dt], roll_type=RollType.MIN) for dt in self.dice])
+
+    @property
+    def range(self) -> range:
+        return range(
+            start=self.min_value, stop=self.max_value + 1
+        )  # +1 because it is not inclusive of the upper bound
+
+    def hit_points(self, ability_scores: AbilityScores) -> str:
+        if len(self.dice) > 1:
+            raise NotImplementedError
+        die, cnt = self.dice.popitem()
+        self.dice[die] = cnt
+        total_hp = self.average_value + ability_scores.constitution_modifier * cnt
+        return f"{total_hp} ({cnt}{die.name.lower()} + {ability_scores.constitution_modifier * cnt})"
+
+    @property
+    def num_hit_dice(self) -> int:
+        return sum(cnt for cnt in self.dice.values())
+
+    @staticmethod
+    def closest_to(hp: int, monster_size: Size, max_range: int = 51) -> Dice:
+        distances = {
+            i: abs(hp - Dice({monster_size.hit_die: i}).average_value)
+            for i in range(max_range)
+        }
+        closest = min(distances, key=lambda k: distances[k])
+        return Dice({monster_size.hit_die: closest})

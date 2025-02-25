@@ -5,26 +5,26 @@ from PyQt5.QtCore import QObject, Qt
 import os
 from monster_forge.gui.view.create_monster_view import Ui_CreateMonsterView
 from monster_forge.monster_maker import MonsterMaker
-from monster_forge.dnd.dnd import (
+from monster_forge.dnd.enums import (
     Alignment,
-    EncounterDifficulty,
-    EncounterSize,
     Skill,
     Language,
     Condition,
     CreatureType,
     Size,
     DamageType,
-    ChallengeRating,
-    Encounter,
     Proficiency,
     Resistance,
-    AbilityScores,
     Ability,
     SpeedType,
     Sense,
-    Monster,
 )
+from monster_forge.dnd.encounter import Encounter, EncounterDifficulty, EncounterSize
+from monster_forge.dnd.challenge_rating import ChallengeRating
+from monster_forge.dnd.ability_scores import AbilityScores
+from monster_forge.dnd.monster import Monster
+from monster_forge.gui.controller.trait_controller import TraitController
+from monster_forge.dnd.trait import Trait
 from pathlib import Path
 from functools import partial
 from random import randint
@@ -44,6 +44,7 @@ class MonsterCreationController(QWidget):
         self.encounter = Encounter()
         self._mm = MonsterMaker()
         self._setup_UI()
+        self._trait_controllers: dict[str, TraitController] = {}
         self._output_folder: Path = (
             Path(__file__).parent.parent.parent.parent / "generated_output"
         )
@@ -212,6 +213,39 @@ class MonsterCreationController(QWidget):
         self._view.lineedit_hp.textChanged.connect(self._hp_changed)
         # Textedit actions
         self._view.textedit_description.textChanged.connect(self._description_changed)
+        self._view.btn_add_trait.clicked.connect(self._btn_add_trait_clicked)
+
+    def _btn_add_trait_clicked(self) -> None:
+        trait_title = self._view.lineedit_trait_name.text()
+        if not trait_title:
+            print("Trait title required, skipping...")
+            return
+        trait_description = self._view.textedit_trait_description.toPlainText()
+        if not trait_description:
+            print("Trait description required, skipping...")
+            return
+        if not self.monster.name:
+            print("monster name required, skipping...")
+            return
+        trait = Trait(self.monster.name, trait_title, trait_description)
+        tc = TraitController(trait)
+        self._trait_controllers[trait.title] = tc
+        tc.deleted.connect(partial(self._handler_trait_deleted, tc.trait))
+        self._view.tab_traits.layout().addWidget(tc)
+        self._view.lineedit_trait_name.clear()
+        self._view.textedit_trait_description.clear()
+        if trait.title not in self.monster.traits:
+            self.monster.traits[trait.title] = trait
+
+    def _handler_trait_deleted(self, trait: Trait) -> None:
+        tc = self._trait_controllers.get(trait.title, None)
+        if tc is not None:
+            self._view.tab_traits.layout().removeWidget(tc)
+            tc.deleteLater()
+            self.monster.traits.pop(trait.title, None)
+            print(f"Deleted trait: {trait.title}")
+        else:
+            print(f"Couldn't find widget for trait: {trait.title}")
 
     def _ac_changed(self, new_value: int) -> None:
         if self.monster.ac_tied_to_cr:
@@ -519,7 +553,7 @@ class MonsterCreationController(QWidget):
         self._suggest_speed()
         self._suggest_senses()
         self._suggest_telepathy()
-        self._generate_artwork()
+        # self._generate_artwork()
 
     def _refine_description(self) -> None:
         print("Refining monster concept...")

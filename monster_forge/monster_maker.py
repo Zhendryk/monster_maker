@@ -1,12 +1,10 @@
 from collections.abc import Sequence
-from monster_forge.dnd.dnd import (
-    Encounter,
-    Monster,
+from monster_forge.dnd.enums import (
     Size,
     Alignment,
-    EncounterDifficulty,
-    EncounterSize,
 )
+from monster_forge.dnd.monster import Monster
+from monster_forge.dnd.encounter import Encounter, EncounterDifficulty, EncounterSize
 from monster_forge.openai_local.openai_agent import OpenAIAgent
 from monster_forge.utilities import yes_or_no_question, numbered_choice
 

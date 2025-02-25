@@ -858,6 +858,51 @@
        </item>
       </layout>
      </widget>
+     <widget class="QWidget" name="tab_traits">
+      <attribute name="title">
+       <string>Traits</string>
+      </attribute>
+      <layout class="QVBoxLayout" name="verticalLayout_3">
+       <item>
+        <layout class="QHBoxLayout" name="hl_trait_form">
+         <item>
+          <widget class="QLabel" name="_lbl_trait_name">
+           <property name="text">
+            <string>Name:</string>
+           </property>
+          </widget>
+         </item>
+         <item>
+          <widget class="QLineEdit" name="lineedit_trait_name"/>
+         </item>
+         <item>
+          <widget class="QLabel" name="_lbl_trait_description">
+           <property name="text">
+            <string>Description:</string>
+           </property>
+          </widget>
+         </item>
+         <item>
+          <widget class="QTextEdit" name="textedit_trait_description">
+           <property name="maximumSize">
+            <size>
+             <width>16777215</width>
+             <height>120</height>
+            </size>
+           </property>
+          </widget>
+         </item>
+         <item>
+          <widget class="QPushButton" name="btn_add_trait">
+           <property name="text">
+            <string>Add Trait</string>
+           </property>
+          </widget>
+         </item>
+        </layout>
+       </item>
+      </layout>
+     </widget>
      <widget class="QWidget" name="tab_artwork">
       <attribute name="title">
        <string>Artwork</string>
