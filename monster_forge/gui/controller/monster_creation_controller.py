@@ -60,32 +60,197 @@ class MonsterCreationController(QWidget):
     def _setup_UI(self) -> None:
         # Title
         self.setWindowTitle("Create New Monster")
-        # Setting visibilty/enabled status of various components
+        # AI generation progress bar
         self._view.progressbar_ai_query.setVisible(False)
-        self._view.lineedit_challenge_rating.setEnabled(False)
-        # Combobox item population
-        self._view.cb_skills.addItems(sorted([s.display_name for s in Skill]))
-        self._view.cb_skills.setCurrentIndex(-1)
-        self._view.cb_alignment.addItems(
-            sorted([alignment.display_name for alignment in Alignment])
-        )
-        self._view.cb_alignment.setCurrentIndex(-1)
-        self._view.cb_encounter_difficulty.addItems(
-            sorted([diff.display_name for diff in EncounterDifficulty])
-        )
-        self._view.cb_encounter_difficulty.setCurrentIndex(-1)
+        # Monster name
+        self._view.lineedit_name.textChanged.connect(self._name_changed)
+        self._view.btn_suggest_name.clicked.connect(self._suggest_monster_names)
+        # Monster description
+        self._view.textedit_description.textChanged.connect(self._description_changed)
+        self._view.btn_refine_description.clicked.connect(self._refine_description)
+        # AI "Generate all" button
+        self._view.btn_suggest_all.clicked.connect(self._generate_all)
+        # Encounter details tab
+        self._configure_encounter_tab()
+        # General Info tab
+        self._configure_general_info_tab()
+        # Ability Scores tab
+        self._configure_ability_scores_tab()
+        # Speed tab
+        self._configure_speed_tab()
+        # Senses, Languages, Immunities, etc. tab
+        self._configure_senses_languages_immunities_tab()
+        # Traits, Actions, Bonus Actions, etc. tab
+        self._configure_traits_actions_tab()
+        # Artwork tab
+        self._configure_artwork_tab()
+        # Import, Export and Generate Markdown buttons
+        self._view.btn_import.clicked.connect(self._import_monster)
+        self._view.btn_export.clicked.connect(self._export_monster)
+        self._view.btn_generate_markdown.clicked.connect(self.generate_markdown_file)
+
+    def _configure_encounter_tab(self) -> None:
+        # Has Lair
+        self._view.checkbox_has_lair.clicked.connect(self._calc_cr)
+        # Encounter Size
         self._view.cb_encounter_size.addItems(
             sorted([size.display_name for size in EncounterSize])
         )
         self._view.cb_encounter_size.setCurrentIndex(-1)
-        self._view.cb_conditions.addItems(
-            sorted([condition.display_name for condition in Condition])
+        self._view.cb_encounter_size.currentIndexChanged.connect(self._calc_cr)
+        # Encounter Difficulty
+        self._view.cb_encounter_difficulty.addItems(
+            sorted([diff.display_name for diff in EncounterDifficulty])
         )
-        self._view.cb_conditions.setCurrentIndex(-1)
+        self._view.cb_encounter_difficulty.setCurrentIndex(-1)
+        self._view.cb_encounter_difficulty.currentIndexChanged.connect(self._calc_cr)
+        # Average Party Level
+        self._view.spinbox_avg_party_level.valueChanged.connect(self._calc_cr)
+        # Number of Player Characters
+        self._view.spinbox_num_pcs.valueChanged.connect(self._calc_cr)
+
+    def _configure_general_info_tab(self) -> None:
+        # Creature Type
         self._view.cb_creature_type.addItems(
             sorted([mt.display_name for mt in CreatureType])
         )
         self._view.cb_creature_type.setCurrentIndex(-1)
+        self._view.cb_creature_type.currentTextChanged.connect(
+            self._creature_type_changed
+        )
+        self._view.btn_suggest_creature_type.clicked.connect(
+            self._suggest_creature_type
+        )
+        # Alignment
+        self._view.cb_alignment.addItems(
+            sorted([alignment.display_name for alignment in Alignment])
+        )
+        self._view.cb_alignment.setCurrentIndex(-1)
+        self._view.cb_alignment.currentTextChanged.connect(self._alignment_changed)
+        self._view.btn_suggest_alignment.clicked.connect(self._suggest_alignment)
+        # Size
+        self._view.cb_size.addItems(sorted([s.display_name for s in Size]))
+        self._view.cb_size.setCurrentIndex(-1)
+        self._view.cb_size.currentTextChanged.connect(self._size_changed)
+        self._view.cb_size.currentIndexChanged.connect(self._calc_cr)
+        self._view.btn_suggest_size.clicked.connect(self._suggest_size)
+        # Challenge Rating
+        self._view.lineedit_challenge_rating.setEnabled(False)
+        # AC
+        self._view.spinbox_ac.valueChanged.connect(self._ac_changed)
+        self._view.checkbox_tie_ac_to_cr.clicked.connect(self._toggle_ac_cr_tie)
+        # HP
+        self._view.lineedit_hp.textChanged.connect(self._hp_changed)
+        self._view.checkbox_tie_hp_to_cr.clicked.connect(self._toggle_hp_cr_tie)
+
+    def _configure_speed_tab(self) -> None:
+        # Walk speed
+        self._view.spinbox_walk_speed.valueChanged.connect(
+            partial(self._speed_changed, SpeedType.WALKING)
+        )
+        # Swim speed
+        self._view.spinbox_swim_speed.valueChanged.connect(
+            partial(self._speed_changed, SpeedType.SWIM)
+        )
+        # Fly speed
+        self._view.spinbox_fly_speed.valueChanged.connect(
+            partial(self._speed_changed, SpeedType.FLY)
+        )
+        # Climb speed
+        self._view.spinbox_climb_speed.valueChanged.connect(
+            partial(self._speed_changed, SpeedType.CLIMB)
+        )
+        # Burrow speed
+        self._view.spinbox_burrow_speed.valueChanged.connect(
+            partial(self._speed_changed, SpeedType.BURROW)
+        )
+
+    def _configure_ability_scores_tab(self) -> None:
+        # AI Generation button
+        self._view.btn_suggest_ability_scores.clicked.connect(
+            self._suggest_ability_scores
+        )
+        # Strength
+        self._view.spinbox_str.valueChanged.connect(
+            partial(self._ability_score_changed, Ability.STRENGTH)
+        )
+        self._view.checkbox_prof_st_str.clicked.connect(
+            partial(self._saving_throw_proficiency_toggled, Ability.STRENGTH)
+        )
+        # Dexterity
+        self._view.spinbox_dex.valueChanged.connect(
+            partial(self._ability_score_changed, Ability.DEXTERITY)
+        )
+        self._view.checkbox_prof_st_dex.clicked.connect(
+            partial(self._saving_throw_proficiency_toggled, Ability.DEXTERITY)
+        )
+        # Constitution
+        self._view.spinbox_con.valueChanged.connect(
+            partial(self._ability_score_changed, Ability.CONSTITUTION)
+        )
+        self._view.checkbox_prof_st_con.clicked.connect(
+            partial(self._saving_throw_proficiency_toggled, Ability.CONSTITUTION)
+        )
+        # Intelligence
+        self._view.spinbox_int.valueChanged.connect(
+            partial(self._ability_score_changed, Ability.INTELLIGENCE)
+        )
+        self._view.checkbox_prof_st_int.clicked.connect(
+            partial(self._saving_throw_proficiency_toggled, Ability.INTELLIGENCE)
+        )
+        # Wisdom
+        self._view.spinbox_wis.valueChanged.connect(
+            partial(self._ability_score_changed, Ability.WISDOM)
+        )
+        self._view.checkbox_prof_st_wis.clicked.connect(
+            partial(self._saving_throw_proficiency_toggled, Ability.WISDOM)
+        )
+        # Charisma
+        self._view.spinbox_cha.valueChanged.connect(
+            partial(self._ability_score_changed, Ability.CHARISMA)
+        )
+        self._view.checkbox_prof_st_cha.clicked.connect(
+            partial(self._saving_throw_proficiency_toggled, Ability.CHARISMA)
+        )
+
+    def _configure_senses_languages_immunities_tab(self) -> None:
+        # Skill proficiencies
+        self._view.cb_skills.addItems(sorted([s.display_name for s in Skill]))
+        self._view.cb_skills.setCurrentIndex(-1)
+        self._view.btn_skills_proficient.clicked.connect(
+            partial(self._btn_add_skill_pressed, Proficiency.PROFICIENT)
+        )
+        self._view.btn_skills_expert.clicked.connect(
+            partial(self._btn_add_skill_pressed, Proficiency.EXPERTISE)
+        )
+        self._view.btn_skills_remove.clicked.connect(self._btn_remove_skill_pressed)
+        # Damage resistances & immunities
+        self._view.cb_damage.addItems(sorted([d.display_name for d in DamageType]))
+        self._view.cb_damage.setCurrentIndex(-1)
+        self._view.btn_damage_resistant.clicked.connect(
+            partial(self._btn_add_damage_pressed, Resistance.RESISTANT)
+        )
+        self._view.btn_damage_immune.clicked.connect(
+            partial(self._btn_add_damage_pressed, Resistance.IMMUNE)
+        )
+        self._view.btn_damage_remove.clicked.connect(self._btn_remove_damage_pressed)
+        # Condition immunities
+        self._view.cb_conditions.addItems(
+            sorted([condition.display_name for condition in Condition])
+        )
+        self._view.cb_conditions.setCurrentIndex(-1)
+        self._view.btn_conditions_immune.clicked.connect(
+            self._btn_add_condition_immunity_pressed
+        )
+        self._view.btn_conditions_remove.clicked.connect(
+            self._btn_remove_condition_immunity_pressed
+        )
+        # Senses
+        self._view.cb_senses.addItems(sorted([s.display_name for s in Sense]))
+        self._view.cb_senses.setCurrentIndex(-1)
+        self._view.btn_senses_add.clicked.connect(self._btn_add_sense_pressed)
+        self._view.btn_senses_remove.clicked.connect(self._btn_remove_sense_pressed)
+        # Languages
         language_items = []
         for l in Language:
             language_items.append(l.display_name)
@@ -95,148 +260,44 @@ class MonsterCreationController(QWidget):
         language_items.append("All")
         self._view.cb_languages.addItems(sorted(language_items))
         self._view.cb_languages.setCurrentIndex(-1)
-        self._view.cb_senses.addItems(sorted([s.display_name for s in Sense]))
-        self._view.cb_senses.setCurrentIndex(-1)
-        self._view.cb_size.addItems(sorted([s.display_name for s in Size]))
-        self._view.cb_size.setCurrentIndex(-1)
-        self._view.cb_size.currentIndexChanged.connect(self._calc_cr)
-        self._view.cb_damage.addItems(sorted([d.display_name for d in DamageType]))
-        self._view.cb_damage.setCurrentIndex(-1)
-        # Combobox callbacks
-        self._view.cb_encounter_size.currentIndexChanged.connect(self._calc_cr)
-        self._view.cb_encounter_difficulty.currentIndexChanged.connect(self._calc_cr)
-        self._view.cb_size.currentTextChanged.connect(self._size_changed)
-        self._view.cb_alignment.currentTextChanged.connect(self._alignment_changed)
-        self._view.cb_creature_type.currentTextChanged.connect(
-            self._creature_type_changed
-        )
-        # Spinbox callbacks
-        self._view.spinbox_avg_party_level.valueChanged.connect(self._calc_cr)
-        self._view.spinbox_num_pcs.valueChanged.connect(self._calc_cr)
-        self._view.spinbox_telepathy_range.valueChanged.connect(
-            self._telepathy_range_changed
-        )
-        self._view.spinbox_walk_speed.valueChanged.connect(
-            partial(self._speed_changed, SpeedType.WALKING)
-        )
-        self._view.spinbox_swim_speed.valueChanged.connect(
-            partial(self._speed_changed, SpeedType.SWIM)
-        )
-        self._view.spinbox_fly_speed.valueChanged.connect(
-            partial(self._speed_changed, SpeedType.FLY)
-        )
-        self._view.spinbox_climb_speed.valueChanged.connect(
-            partial(self._speed_changed, SpeedType.CLIMB)
-        )
-        self._view.spinbox_burrow_speed.valueChanged.connect(
-            partial(self._speed_changed, SpeedType.BURROW)
-        )
-        self._view.spinbox_str.valueChanged.connect(
-            partial(self._ability_score_changed, Ability.STRENGTH)
-        )
-        self._view.spinbox_dex.valueChanged.connect(
-            partial(self._ability_score_changed, Ability.DEXTERITY)
-        )
-        self._view.spinbox_con.valueChanged.connect(
-            partial(self._ability_score_changed, Ability.CONSTITUTION)
-        )
-        self._view.spinbox_int.valueChanged.connect(
-            partial(self._ability_score_changed, Ability.INTELLIGENCE)
-        )
-        self._view.spinbox_wis.valueChanged.connect(
-            partial(self._ability_score_changed, Ability.WISDOM)
-        )
-        self._view.spinbox_cha.valueChanged.connect(
-            partial(self._ability_score_changed, Ability.CHARISMA)
-        )
-        self._view.spinbox_ac.valueChanged.connect(self._ac_changed)
-
-        # Button actions
-        self._view.btn_suggest_name.clicked.connect(self._suggest_monster_names)
-        self._view.btn_refine_description.clicked.connect(self._refine_description)
-        self._view.btn_suggest_creature_type.clicked.connect(
-            self._suggest_creature_type
-        )
-        self._view.btn_suggest_alignment.clicked.connect(self._suggest_alignment)
-        self._view.btn_suggest_size.clicked.connect(self._suggest_size)
-        self._view.btn_generate_artwork.clicked.connect(self._generate_artwork)
-        self._view.btn_skills_proficient.clicked.connect(
-            partial(self._btn_add_skill_pressed, Proficiency.PROFICIENT)
-        )
-        self._view.btn_skills_expert.clicked.connect(
-            partial(self._btn_add_skill_pressed, Proficiency.EXPERTISE)
-        )
-        self._view.btn_skills_remove.clicked.connect(self._btn_remove_skill_pressed)
-        self._view.btn_damage_resistant.clicked.connect(
-            partial(self._btn_add_damage_pressed, Resistance.RESISTANT)
-        )
-        self._view.btn_damage_immune.clicked.connect(
-            partial(self._btn_add_damage_pressed, Resistance.IMMUNE)
-        )
-        self._view.btn_damage_remove.clicked.connect(self._btn_remove_damage_pressed)
         self._view.btn_languages_add.clicked.connect(self._btn_add_language_pressed)
         self._view.btn_languages_remove.clicked.connect(
             self._btn_remove_language_pressed
         )
-        self._view.btn_senses_add.clicked.connect(self._btn_add_sense_pressed)
-        self._view.btn_senses_remove.clicked.connect(self._btn_remove_sense_pressed)
-        self._view.btn_conditions_immune.clicked.connect(
-            self._btn_add_condition_immunity_pressed
-        )
-        self._view.btn_conditions_remove.clicked.connect(
-            self._btn_remove_condition_immunity_pressed
-        )
-        self._view.btn_suggest_ability_scores.clicked.connect(
-            self._suggest_ability_scores
-        )
-        self._view.btn_suggest_all.clicked.connect(self._generate_all)
-        self._view.btn_generate_markdown.clicked.connect(self.generate_markdown_file)
-        self._view.btn_import.clicked.connect(self._import_monster)
-        self._view.btn_export.clicked.connect(self._export_monster)
-        # Checkbox actions
-        self._view.checkbox_has_lair.clicked.connect(self._calc_cr)
-        self._view.checkbox_tie_ac_to_cr.clicked.connect(self._toggle_ac_cr_tie)
-        self._view.checkbox_tie_hp_to_cr.clicked.connect(self._toggle_hp_cr_tie)
+        # Telepathy
         self._view.checkbox_telepathy.clicked.connect(self._telepathy_toggled)
-        self._view.checkbox_prof_st_str.clicked.connect(
-            partial(self._saving_throw_proficiency_toggled, Ability.STRENGTH)
+        self._view.spinbox_telepathy_range.valueChanged.connect(
+            self._telepathy_range_changed
         )
-        self._view.checkbox_prof_st_dex.clicked.connect(
-            partial(self._saving_throw_proficiency_toggled, Ability.DEXTERITY)
-        )
-        self._view.checkbox_prof_st_con.clicked.connect(
-            partial(self._saving_throw_proficiency_toggled, Ability.CONSTITUTION)
-        )
-        self._view.checkbox_prof_st_int.clicked.connect(
-            partial(self._saving_throw_proficiency_toggled, Ability.INTELLIGENCE)
-        )
-        self._view.checkbox_prof_st_wis.clicked.connect(
-            partial(self._saving_throw_proficiency_toggled, Ability.WISDOM)
-        )
-        self._view.checkbox_prof_st_cha.clicked.connect(
-            partial(self._saving_throw_proficiency_toggled, Ability.CHARISMA)
-        )
-        # Lineedit actions
-        self._view.lineedit_name.textChanged.connect(self._name_changed)
-        self._view.lineedit_hp.textChanged.connect(self._hp_changed)
-        # Textedit actions
-        self._view.textedit_description.textChanged.connect(self._description_changed)
-        self._view.btn_create_trait.clicked.connect(self._btn_create_trait_clicked)
-        self._view.btn_create_action.clicked.connect(self._btn_create_action_clicked)
-        self._view.btn_create_bonus_action.clicked.connect(
-            self._btn_create_bonus_action_clicked
-        )
-        self._view.btn_create_reaction.clicked.connect(
-            self._btn_create_reaction_clicked
-        )
-        self._view.btn_create_legendary_action.clicked.connect(
-            self._btn_create_legendary_action_clicked
-        )
+
+    def _configure_traits_actions_tab(self) -> None:
+        # Some data for combobox population
         self._all_action_templates = all_action_templates()
+        # Action presets
         self._view.cb_action_presets.addItems(list(self._all_action_templates.keys()))
         self._view.btn_use_action_preset.clicked.connect(
             self._btn_use_action_preset_clicked
         )
+        # Create Trait
+        self._view.btn_create_trait.clicked.connect(self._btn_create_trait_clicked)
+        # Create Action
+        self._view.btn_create_action.clicked.connect(self._btn_create_action_clicked)
+        # Create Bonus Action
+        self._view.btn_create_bonus_action.clicked.connect(
+            self._btn_create_bonus_action_clicked
+        )
+        # Create Reaction
+        self._view.btn_create_reaction.clicked.connect(
+            self._btn_create_reaction_clicked
+        )
+        # Create Legendary Action
+        self._view.btn_create_legendary_action.clicked.connect(
+            self._btn_create_legendary_action_clicked
+        )
+
+    def _configure_artwork_tab(self) -> None:
+        # AI generation button
+        self._view.btn_generate_artwork.clicked.connect(self._generate_artwork)
 
     def _btn_use_action_preset_clicked(self) -> None:
         template_name = self._view.cb_action_presets.currentText()
