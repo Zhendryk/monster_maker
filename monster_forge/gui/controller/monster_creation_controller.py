@@ -833,10 +833,15 @@ class MonsterCreationController(QWidget):
     def _export_monster(self) -> None:
         pickled_monster_data = PickledMonsterData(self.monster, self.encounter)
         pickled_monster = jsonpickle.encode(pickled_monster_data, keys=True)
-        filepath = self._output_folder / f"{self.monster.name}.statblock.json"
+        filepath = (
+            self._output_folder
+            / f"{self.monster.name.lower().replace(' ', '_')}.statblock.json"
+        )
         with open(filepath, "w") as export_file:
             export_file.write(pickled_monster)
-        print(f"Exported monster ({self.monster.name}) to: {filepath}")
+        print(
+            f"Exported monster ({self.monster.name.lower().replace(' ', '_')}) to: {filepath}"
+        )
 
     def _generate_text(self, what_to_generate: str, response_constraints: str) -> str:
         return self._mm._openai_agent.generate_text(
@@ -1469,7 +1474,10 @@ class MonsterCreationController(QWidget):
         if not self.monster.description:
             print("No description available, skipping")
             return
-        img_download_filepath = self._output_folder / f"{self.monster.name}_artwork.png"
+        img_download_filepath = (
+            self._output_folder
+            / f"{self.monster.name.lower().replace(' ', '_')}_artwork.png"
+        )
         revised_prompt, generated_img_url = self._mm._openai_agent.generate_image(
             f"Generate artwork based on the description I will provide below while adhering to the following constraints: 1. The artwork must utilize the art style of the 2024 Dungeons & Dragons Monster Manual (fantasy realism). 2. The artwork must depict the entire body of the creature, without any part of it cropped out of the frame. 3. The artwork must have a plain white background. 4. The artwork must not have any text on it whatsoever. The description to use as inspiration for the art is as follows: {self.monster.description}",
             download_image_to_file=True,
