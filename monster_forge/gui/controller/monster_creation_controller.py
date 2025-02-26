@@ -228,6 +228,7 @@ class MonsterCreationController(QWidget):
             partial(self._btn_add_skill_pressed, Proficiency.EXPERTISE)
         )
         self._view.btn_skills_remove.clicked.connect(self._btn_remove_skill_pressed)
+        self._view.btn_clear_skills.clicked.connect(self._btn_clear_skills_pressed)
         # Damage resistances & immunities
         self._view.cb_damage.addItems(sorted([d.display_name for d in DamageType]))
         self._view.cb_damage.setCurrentIndex(-1)
@@ -238,6 +239,7 @@ class MonsterCreationController(QWidget):
             partial(self._btn_add_damage_pressed, Resistance.IMMUNE)
         )
         self._view.btn_damage_remove.clicked.connect(self._btn_remove_damage_pressed)
+        self._view.btn_clear_damage.clicked.connect(self._btn_clear_damage_pressed)
         # Condition immunities
         self._view.cb_conditions.addItems(
             sorted([condition.display_name for condition in Condition])
@@ -249,11 +251,15 @@ class MonsterCreationController(QWidget):
         self._view.btn_conditions_remove.clicked.connect(
             self._btn_remove_condition_immunity_pressed
         )
+        self._view.btn_clear_conditions.clicked.connect(
+            self._btn_clear_conditions_pressed
+        )
         # Senses
         self._view.cb_senses.addItems(sorted([s.display_name for s in Sense]))
         self._view.cb_senses.setCurrentIndex(-1)
         self._view.btn_senses_add.clicked.connect(self._btn_add_sense_pressed)
         self._view.btn_senses_remove.clicked.connect(self._btn_remove_sense_pressed)
+        self._view.btn_clear_senses.clicked.connect(self._btn_clear_senses_pressed)
         # Languages
         language_items = []
         for l in Language:
@@ -267,6 +273,9 @@ class MonsterCreationController(QWidget):
         self._view.btn_languages_add.clicked.connect(self._btn_add_language_pressed)
         self._view.btn_languages_remove.clicked.connect(
             self._btn_remove_language_pressed
+        )
+        self._view.btn_clear_languages.clicked.connect(
+            self._btn_clear_languages_pressed
         )
         # Telepathy
         self._view.checkbox_telepathy.clicked.connect(self._telepathy_toggled)
@@ -1205,7 +1214,7 @@ class MonsterCreationController(QWidget):
             (
                 i
                 for i in range(self._view.listwidget_skills.count())
-                if self._view.listwidget_languages.item(i)
+                if self._view.listwidget_skills.item(i)
                 .text()
                 .startswith(skill.display_name)
             ),
@@ -1218,6 +1227,16 @@ class MonsterCreationController(QWidget):
         skill_text = self._view.cb_skills.currentText()
         skill = Skill.from_display_name(skill_text)
         self._remove_skill(skill)
+
+    def _btn_clear_skills_pressed(self) -> None:
+        items_to_remove: list[tuple[int, Skill]] = []
+        for i in range(self._view.listwidget_skills.count()):
+            txt = self._view.listwidget_skills.item(i).text()
+            skill = Skill.from_partial_name(txt)
+            items_to_remove.append((i, skill))
+        for item_to_remove in sorted(items_to_remove, key=lambda x: x[0], reverse=True):
+            _, skill = item_to_remove
+            self._remove_skill(skill)
 
     def _add_language(self, language: Language) -> None:
         if language not in self.monster.languages:
@@ -1259,6 +1278,16 @@ class MonsterCreationController(QWidget):
         lang_text = self._view.cb_languages.currentText()
         language = Language.from_display_name(lang_text)
         self._remove_language(language)
+
+    def _btn_clear_languages_pressed(self) -> None:
+        items_to_remove: list[tuple[int, Language]] = []
+        for i in range(self._view.listwidget_languages.count()):
+            txt = self._view.listwidget_languages.item(i).text()
+            language = Language.from_display_name(txt)
+            items_to_remove.append((i, language))
+        for item_to_remove in sorted(items_to_remove, key=lambda x: x[0], reverse=True):
+            _, language = item_to_remove
+            self._remove_language(language)
 
     def _add_damage(
         self, damage_type: DamageType, resistance_level: Resistance
@@ -1306,6 +1335,16 @@ class MonsterCreationController(QWidget):
         dmg_type = DamageType.from_display_name(dmg_text)
         self._remove_damage(dmg_type)
 
+    def _btn_clear_damage_pressed(self) -> None:
+        items_to_remove: list[tuple[int, DamageType]] = []
+        for i in range(self._view.listwidget_damage.count()):
+            txt = self._view.listwidget_damage.item(i).text()
+            dmg = DamageType.from_partial_name(txt)
+            items_to_remove.append((i, dmg))
+        for item_to_remove in sorted(items_to_remove, key=lambda x: x[0], reverse=True):
+            _, dmg = item_to_remove
+            self._remove_damage(dmg)
+
     def _add_sense(self, sense: Sense, range_ft: int) -> None:
         self.monster.senses[sense] = range_ft
         if any(
@@ -1348,6 +1387,16 @@ class MonsterCreationController(QWidget):
         sense_text = self._view.cb_senses.currentText()
         sense = Sense.from_display_name(sense_text)
         self._remove_sense(sense)
+
+    def _btn_clear_senses_pressed(self) -> None:
+        items_to_remove: list[tuple[int, Sense]] = []
+        for i in range(self._view.listwidget_senses.count()):
+            txt = self._view.listwidget_senses.item(i).text()
+            sense = Sense.from_partial_name(txt)
+            items_to_remove.append((i, sense))
+        for item_to_remove in sorted(items_to_remove, key=lambda x: x[0], reverse=True):
+            _, sense = item_to_remove
+            self._remove_sense(sense)
 
     def _add_condition_immunity(self, condition: Condition) -> None:
         if condition not in self.monster.condition_resistances:
@@ -1402,6 +1451,16 @@ class MonsterCreationController(QWidget):
         condition = Condition.from_display_name(condition_text)
         self._remove_condition_immunity(condition)
 
+    def _btn_clear_conditions_pressed(self) -> None:
+        items_to_remove: list[tuple[int, Condition]] = []
+        for i in range(self._view.listwidget_conditions.count()):
+            txt = self._view.listwidget_conditions.item(i).text()
+            condition = Condition.from_display_name(txt)
+            items_to_remove.append((i, condition))
+        for item_to_remove in sorted(items_to_remove, key=lambda x: x[0], reverse=True):
+            _, condition = item_to_remove
+            self._remove_condition_immunity(condition)
+
     def _generate_artwork(self) -> None:
         print("Generating artwork...")
         if not self.monster.name:
@@ -1428,7 +1487,6 @@ class MonsterCreationController(QWidget):
         self,
         checked: bool,
         output_path: Path | None = None,
-        wide_statblock: bool = False,
     ) -> None:
         if output_path is None:
             fn = f"{self.monster.name.lower().replace(' ', '_')}_statblock.md"
@@ -1439,10 +1497,10 @@ class MonsterCreationController(QWidget):
             os.makedirs(output_path, exist_ok=True)
         with open(output_filepath, "w") as markdown_file:
             markdown_txt = self.monster.as_homebrewery_v3_markdown_2024(
-                wide_statblock=wide_statblock
+                wide_statblock=self._view.checkbox_wide_statblock.isChecked()
             )
             markdown_file.write(markdown_txt)
         print(f"File write complete: {output_path}")
 
 
-# TODO: Interactions with list views for senses, etc.
+# TODO: Whenever generating AI, use progress bar, logs, popup errors, code cleanup

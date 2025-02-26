@@ -65,17 +65,16 @@ class ChallengeRating:
 
     @property
     def display(self) -> str:
+        formatted_experience_points = f
         if isinstance(self.rating, float):
             numerator, denominator = self.rating.as_integer_ratio()
             if denominator == 1:
                 if self.has_lair:
-                    return f"{numerator} (XP {self.experience_points}, or {self.lair_xp} in lair; PB +{self.proficiency_bonus})"
-                return f"{numerator} (XP {self.experience_points}; PB +{self.proficiency_bonus})"
+                    return f"{numerator} (XP {self.experience_points:,}, or {self.lair_xp:,} in Lair; PB +{self.proficiency_bonus})"
+                return f"{numerator} (XP {self.experience_points:,}; PB +{self.proficiency_bonus})"
             if self.has_lair:
-                return f"{numerator}/{denominator} (XP {self.experience_points}, or {self.lair_xp} in lair; PB +{self.proficiency_bonus})"
-            return f"{numerator}/{denominator} (XP {self.experience_points}; PB +{self.proficiency_bonus})"
+                return f"{numerator}/{denominator} (XP {self.experience_points:,}, or {self.lair_xp:,} in Lair; PB +{self.proficiency_bonus})"
+            return f"{numerator}/{denominator} (XP {self.experience_points:,}; PB +{self.proficiency_bonus})"
         elif self.has_lair:
-            return f"{self.rating} (XP {self.experience_points}, or {self.lair_xp} in lair; PB +{self.proficiency_bonus})"
-        return (
-            f"{self.rating} (XP {self.experience_points}; PB +{self.proficiency_bonus})"
-        )
+            return f"{self.rating} (XP {self.experience_points:,}, or {self.lair_xp:,} in Lair; PB +{self.proficiency_bonus})"
+        return f"{self.rating} (XP {self.experience_points:,}; PB +{self.proficiency_bonus})"
