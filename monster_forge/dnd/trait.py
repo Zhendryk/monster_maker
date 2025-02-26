@@ -58,7 +58,7 @@ class Trait:
                 "x and y required in limited use charges if making a RECHARGE_X_Y trait"
             )
 
-    def _substitute_dice_roll(self, match: re.Match) -> str:
+    def _substitute_dice_roll(self, match: re.Match, add_sign: bool = False) -> str:
         num_dice = int(match.group(PATTERN_DICE_ROLL_CG_NUM_DICE))
         die_type = Die.from_name(match.group(PATTERN_DICE_ROLL_CG_DIE_TYPE))
         sign = match.group(PATTERN_DICE_ROLL_CG_SIGN)
@@ -66,9 +66,15 @@ class Trait:
         if bonus is not None:
             bonus = int(bonus)
         dice_roll_calculated = Dice.calculate_avg_roll(num_dice, die_type, sign, bonus)
+        if add_sign:
+            return (
+                f"+{dice_roll_calculated}"
+                if dice_roll_calculated >= 0
+                else f"-{dice_roll_calculated}"
+            )
         return str(dice_roll_calculated)
 
-    def _substitute_stat_operation(self, match: re.Match) -> str:
+    def _substitute_stat_operation(self, match: re.Match, add_sign: bool = True) -> str:
         stat = match.group(PATTERN_STAT_OPERATION_CG_STAT)
         operation = match.group(PATTERN_STAT_OPERATION_CG_OPERATION)
         sign = match.group(PATTERN_STAT_OPERATION_CG_SIGN)
@@ -83,6 +89,12 @@ class Trait:
             sign=sign,
             bonus=bonus,
         )
+        if add_sign:
+            return (
+                f"+{stat_operation_calculated}"
+                if stat_operation_calculated >= 0
+                else f"-{stat_operation_calculated}"
+            )
         return str(stat_operation_calculated)
 
     def _resolve_macros(self) -> None:

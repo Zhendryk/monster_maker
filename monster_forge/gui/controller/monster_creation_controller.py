@@ -30,6 +30,7 @@ from functools import partial
 from random import randint
 import jsonpickle
 from monster_forge.pickled_data import PickledMonsterData
+from monster_forge.dnd.action import all_action_templates, Action
 
 # Masquerade Demon
 # A demon who blends into the higher eschelons of society to hunt its prey. It regularly attends soirees and other elegant events to lure victims in with its charming personality and impeccable decorum.
@@ -213,14 +214,48 @@ class MonsterCreationController(QWidget):
         self._view.lineedit_hp.textChanged.connect(self._hp_changed)
         # Textedit actions
         self._view.textedit_description.textChanged.connect(self._description_changed)
-        self._view.btn_add_trait.clicked.connect(self._btn_add_trait_clicked)
+        self._view.btn_create_trait.clicked.connect(self._btn_create_trait_clicked)
+        self._view.btn_create_action.clicked.connect(self._btn_create_action_clicked)
+        self._view.btn_create_bonus_action.clicked.connect(
+            self._btn_create_bonus_action_clicked
+        )
+        self._view.btn_create_reaction.clicked.connect(
+            self._btn_create_reaction_clicked
+        )
+        self._view.btn_create_legendary_action.clicked.connect(
+            self._btn_create_legendary_action_clicked
+        )
+        self._all_action_templates = all_action_templates()
+        self._view.cb_action_presets.addItems(list(self._all_action_templates.keys()))
+        self._view.btn_use_action_preset.clicked.connect(
+            self._btn_use_action_preset_clicked
+        )
 
-    def _btn_add_trait_clicked(self) -> None:
-        trait_title = self._view.lineedit_trait_name.text()
+    def _btn_use_action_preset_clicked(self) -> None:
+        template_name = self._view.cb_action_presets.currentText()
+        if template_name in self._all_action_templates:
+            self._view.textedit_action_description.setText(
+                self._all_action_templates[template_name]
+            )
+
+    def _btn_create_action_clicked(self) -> None:
+        pass  # TODO: Implement me
+
+    def _btn_create_bonus_action_clicked(self) -> None:
+        pass  # TODO: Implement me
+
+    def _btn_create_reaction_clicked(self) -> None:
+        pass  # TODO: Implement me
+
+    def _btn_create_legendary_action_clicked(self) -> None:
+        pass  # TODO: Implement me
+
+    def _btn_create_trait_clicked(self) -> None:
+        trait_title = self._view.lineedit_action_name.text()
         if not trait_title:
             print("Trait title required, skipping...")
             return
-        trait_description = self._view.textedit_trait_description.toPlainText()
+        trait_description = self._view.textedit_action_description.toPlainText()
         if not trait_description:
             print("Trait description required, skipping...")
             return
@@ -240,6 +275,7 @@ class MonsterCreationController(QWidget):
             self.monster.saving_throws,
             trait_title,
             trait_description,
+            has_lair=self._view.checkbox_has_lair.isChecked(),
         )
         tc = TraitController(trait)
         self._trait_controllers[trait.title] = tc

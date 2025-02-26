@@ -28,6 +28,15 @@ PATTERN_STAT_OPERATION_CG_OPERATION: Final[int] = 2
 PATTERN_STAT_OPERATION_CG_SIGN: Final[int] = 3
 PATTERN_STAT_OPERATION_CG_BONUS: Final[int] = 4
 
+PATTERN_STAT_ATTACK: Final[re.Pattern] = re.compile(
+    r"\[(STR|DEX|CON|INT|WIS|CHA)\s?(\d+)\s?([dD]\s?(?:4|6|8|10|12|20))\s?(\+|-)?\s?(\d+)?\]"
+)
+PATTERN_STAT_ATTACK_CG_STAT: Final[int] = 1
+PATTERN_STAT_ATTACK_CG_NUM_DICE: Final[int] = 2
+PATTERN_STAT_ATTACK_CG_DIE_TYPE: Final[int] = 3
+PATTERN_STAT_ATTACK_CG_SIGN: Final[int] = 4
+PATTERN_STAT_ATTACK_CG_BONUS: Final[int] = 5
+
 MACRO_MONSTER_NAME: Final[str] = "[MON]"
 MACRO_STR_MOD: Final[str] = "[STR]"
 MACRO_DEX_MOD: Final[str] = "[DEX]"

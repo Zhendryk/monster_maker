@@ -38,6 +38,17 @@ class Ability(DNDEnum):
     WISDOM = auto()
     CHARISMA = auto()
 
+    @property
+    def abbreviation(self) -> str:
+        return self.name.upper()[:3]
+
+    @staticmethod
+    def from_abbreviation(abbreviation: str) -> Ability:
+        for a in Ability:
+            if abbreviation.upper() == a.abbreviation:
+                return a
+        raise ValueError(f"Invalid Ability abbreviation: {abbreviation}")
+
 
 class ActionSubtype(DNDEnum):
     MELEE_ATTACK_ROLL = auto()

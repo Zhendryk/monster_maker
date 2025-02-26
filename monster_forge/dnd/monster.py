@@ -18,6 +18,7 @@ from monster_forge.dnd.enums import (
     Skill,
     SpeedType,
 )
+from monster_forge.dnd.action import Action
 
 
 @dataclass
@@ -55,6 +56,10 @@ class Monster:
     telepathy: tuple[bool, int] | None = field(default=None)
     challenge_rating: ChallengeRating | None = field(default=None)
     traits: dict[str, Trait] = field(default_factory=dict)
+    actions: dict[str, Action] = field(default_factory=dict)
+    bonus_actions: dict[str, Action] = field(default_factory=dict)
+    reactions: dict[str, Action] = field(default_factory=dict)
+    legendary_actions: dict[str, Action] = field(default_factory=dict)
 
     def __post_init__(self) -> None:
         self.ac_tied_to_cr = True
