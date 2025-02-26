@@ -359,7 +359,7 @@ class MonsterCreationController(QWidget):
 
     def _add_characteristic(self, cc: CombatCharacteristic) -> None:
         ccc = CombatCharacteristicController(cc, parent=self)
-        self._cc_controllers[cc.title] = cc
+        self._cc_controllers[cc.title] = ccc
         ccc.deleted.connect(partial(self._handler_cc_deleted, ccc.cc))
         self._view.tab_actions.layout().addWidget(ccc)
 
@@ -485,10 +485,7 @@ class MonsterCreationController(QWidget):
             trait_title,
             trait_description,
         )
-        tc = CombatCharacteristicController(trait)
-        self._cc_controllers[trait.title] = tc
-        tc.deleted.connect(partial(self._handler_cc_deleted, tc.cc))
-        self._view.tab_actions.layout().addWidget(tc)
+        self._add_characteristic(trait)
         self._view.lineedit_action_name.clear()
         self._view.textedit_action_description.clear()
         if trait.title not in self.monster.traits:
@@ -497,23 +494,26 @@ class MonsterCreationController(QWidget):
     def _handler_cc_deleted(self, cc: CombatCharacteristic, pop: bool = True) -> None:
         controller = self._cc_controllers.get(cc.title, None)
         if controller is not None:
-            self._view.tab_traits.layout().removeWidget(controller)
+            self._view.tab_actions.layout().removeWidget(controller)
             controller.deleteLater()
             match cc.ctype:
                 case CharacteristicType.TRAIT:
-                    self.monster.traits.pop(cc.title, None)
+                    if pop:
+                        self.monster.traits.pop(cc.title, None)
                 case CharacteristicType.ACTION:
-                    self.monster.actions.pop(cc.title, None)
+                    if pop:
+                        self.monster.actions.pop(cc.title, None)
                 case CharacteristicType.BONUS_ACTION:
-                    self.monster.bonus_actions.pop(cc.title, None)
+                    if pop:
+                        self.monster.bonus_actions.pop(cc.title, None)
                 case CharacteristicType.REACTION:
-                    self.monster.reactions.pop(cc.title, None)
+                    if pop:
+                        self.monster.reactions.pop(cc.title, None)
                 case CharacteristicType.LEGENDARY_ACTION:
-                    self.monster.legendary_actions.pop(cc.title, None)
+                    if pop:
+                        self.monster.legendary_actions.pop(cc.title, None)
                 case _:
                     raise NotImplementedError
-            if pop:
-                self.monster.traits.pop(cc.title, None)
             print(f"Deleted combat characteristic: {cc.title}")
         else:
             print(f"Couldn't find widget for combat characteristic: {cc.title}")
@@ -656,6 +656,10 @@ class MonsterCreationController(QWidget):
             if load_successful:
                 self._view.lineedit_name.setText(self.monster.name)
                 self._view.textedit_description.setText(self.monster.description)
+                if self.monster.challenge_rating is not None:
+                    self._view.checkbox_has_lair.setChecked(
+                        self.monster.challenge_rating.has_lair
+                    )
                 self._view.cb_encounter_size.blockSignals(True)
                 self._view.cb_encounter_difficulty.blockSignals(True)
                 self._view.spinbox_avg_party_level.blockSignals(True)
@@ -1083,7 +1087,8 @@ class MonsterCreationController(QWidget):
             sense_range = int(split[1].strip())
             if sense_range % 5 != 0 or sense_range <= 0:
                 sense_range = 0
-            self._add_sense(sense, sense_range)
+            if sense_range > 0:
+                self._add_sense(sense, sense_range)
 
     def _suggest_telepathy(self) -> None:
         print("Suggesting telepathy capabilities...")
@@ -1313,9 +1318,7 @@ class MonsterCreationController(QWidget):
         ):
             print(f'"{sense.display_name}" already exists, not adding duplicate...')
             return
-        self._view.listwidget_senses.addItem(
-            f"{sense.display_name} - {self._view.spinbox_sense_range.value()}"
-        )
+        self._view.listwidget_senses.addItem(f"{sense.display_name} - {range_ft}")
 
     def _btn_add_sense_pressed(self) -> None:
         sense_text = self._view.cb_senses.currentText()
@@ -1442,4 +1445,4 @@ class MonsterCreationController(QWidget):
         print(f"File write complete: {output_path}")
 
 
-# TODO: Dice roll macros, has lair checkbox on import, senses spinbox range, senses import range
+# TODO: Dice roll macros

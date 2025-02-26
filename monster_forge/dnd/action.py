@@ -85,16 +85,10 @@ class CombatCharacteristic:
         die_type = Die.from_name(match.group(PATTERN_DICE_ROLL_CG_DIE_TYPE))
         sign = match.group(PATTERN_DICE_ROLL_CG_SIGN)
         bonus = match.group(PATTERN_DICE_ROLL_CG_BONUS)
-        if bonus is not None:
-            bonus = int(bonus)
+        bonus = int(bonus) or 0
         dice_roll_calculated = Dice.calculate_avg_roll(num_dice, die_type, sign, bonus)
-        if add_sign:
-            return (
-                f"+{dice_roll_calculated}"
-                if dice_roll_calculated >= 0
-                else f"-{dice_roll_calculated}"
-            )
-        return str(dice_roll_calculated)
+        bonus_str = f" + {bonus}" if sign and bonus else ""
+        return f"{dice_roll_calculated} ({num_dice}{die_type.name.lower()}{bonus_str})"
 
     def _substitute_stat_attack(self, match: re.match, add_sign: bool = True) -> str:
         stat = Ability.from_abbreviation(match.group(PATTERN_STAT_ATTACK_CG_STAT))
@@ -118,13 +112,10 @@ class CombatCharacteristic:
             + calced_bonus
         )
         damage_roll_calculated = dice.average_value + attack_bonus
-        if add_sign:
-            return (
-                f"+{damage_roll_calculated}"
-                if damage_roll_calculated >= 0
-                else f"-{damage_roll_calculated}"
-            )
-        return str(damage_roll_calculated)
+        bonus_str = f" + {calced_bonus}" if sign and calced_bonus else ""
+        return (
+            f"{damage_roll_calculated} ({num_dice}{die_type.name.lower()}{bonus_str})"
+        )
 
     def _substitute_stat_operation(self, match: re.Match, add_sign: bool = True) -> str:
         stat = match.group(PATTERN_STAT_OPERATION_CG_STAT)

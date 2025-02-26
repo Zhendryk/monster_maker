@@ -38,7 +38,9 @@ class Dice:
         die, cnt = self.dice.popitem()
         self.dice[die] = cnt
         total_hp = self.average_value + ability_scores.constitution_modifier * cnt
-        return f"{total_hp} ({cnt}{die.name.lower()} + {ability_scores.constitution_modifier * cnt})"
+        bonus = ability_scores.constitution_modifier * cnt
+        bonus_str = f" + {bonus}" if bonus else ""
+        return f"{total_hp} ({cnt}{die.name.lower()}{bonus_str})"
 
     @property
     def num_hit_dice(self) -> int:

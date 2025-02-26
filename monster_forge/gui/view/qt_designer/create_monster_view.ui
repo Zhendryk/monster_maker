@@ -614,7 +614,14 @@
        <item row="3" column="2">
         <layout class="QHBoxLayout" name="hl_senses">
          <item>
-          <widget class="QSpinBox" name="spinbox_sense_range"/>
+          <widget class="QSpinBox" name="spinbox_sense_range">
+           <property name="maximum">
+            <number>1000</number>
+           </property>
+           <property name="singleStep">
+            <number>5</number>
+           </property>
+          </widget>
          </item>
          <item>
           <widget class="QLabel" name="_lbl_senses_ft">
@@ -839,7 +846,7 @@
           <number>0</number>
          </property>
          <property name="maximum">
-          <number>300</number>
+          <number>1000</number>
          </property>
          <property name="singleStep">
           <number>5</number>
