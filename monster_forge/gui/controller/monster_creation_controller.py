@@ -1445,4 +1445,4 @@ class MonsterCreationController(QWidget):
         print(f"File write complete: {output_path}")
 
 
-# TODO: Dice roll macros
+# TODO: Interactions with list views for senses, etc.
