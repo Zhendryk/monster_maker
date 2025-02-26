@@ -1,7 +1,6 @@
 from dataclasses import dataclass, field
 import re
 from monster_forge.dnd.enums import (
-    ActionSubtype,
     Ability,
     Proficiency,
     LimitedUsageType,
@@ -66,19 +65,6 @@ class CombatCharacteristic:
         )
         self.title = " ".join([c.capitalize() for c in self.title.split(" ")])
         self._format_description()
-        # if (
-        #     self.limited_use_type == LimitedUsageType.X_PER_DAY
-        #     and "x" not in self.limited_use_charges
-        # ):
-        #     raise ValueError(
-        #         "x required in limited use charges if making a X_PER_DAY trait"
-        #     )
-        # if self.limited_use_type == LimitedUsageType.RECHARGE_X_Y and (
-        #     "x" not in self.limited_use_charges or "y" not in self.limited_use_charges
-        # ):
-        #     raise ValueError(
-        #         "x and y required in limited use charges if making a RECHARGE_X_Y trait"
-        #     )
 
     def _substitute_dice_roll(self, match: re.Match, add_sign: bool = False) -> str:
         num_dice = int(match.group(PATTERN_DICE_ROLL_CG_NUM_DICE))
@@ -179,13 +165,10 @@ class CombatCharacteristic:
             self.description = self.description.replace(
                 phrase_to_capitalize, phrase_to_capitalize.capitalize()
             )
-        # pieces = self.description.split(" ")
-        # pieces[0] = pieces[0].capitalize()
-        # self.description = " ".join(pieces)
 
     @property
     def homebrewery_v3_2024_markdown(self) -> str:
-        return f"***{self.title}.*** {self.description}"
+        return f"***{self.title}.*** {self.description}{'.' if not self.description.endswith('.') else ''}"
 
 
 @dataclass

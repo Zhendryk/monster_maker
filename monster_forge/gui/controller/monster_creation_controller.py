@@ -821,6 +821,8 @@ class MonsterCreationController(QWidget):
                         self.monster.telepathy[0]
                     )
                 self._clear_characteristics()
+                for trait in self.monster.traits.values():
+                    self._add_characteristic(trait)
                 for action in self.monster.actions.values():
                     self._add_characteristic(action)
                 for bonus_action in self.monster.bonus_actions.values():
@@ -1496,8 +1498,9 @@ class MonsterCreationController(QWidget):
         checked: bool,
         output_path: Path | None = None,
     ) -> None:
+        wide_statblock = self._view.checkbox_wide_statblock.isChecked()
         if output_path is None:
-            fn = f"{self.monster.name.lower().replace(' ', '_')}_statblock.md"
+            fn = f"{self.monster.name.lower().replace(' ', '_')}_statblock{'_wide' if wide_statblock else ''}.md"
             output_filepath = self._output_folder / fn
             if not self._output_folder.exists():
                 os.makedirs(self._output_folder, exist_ok=True)
@@ -1505,10 +1508,10 @@ class MonsterCreationController(QWidget):
             os.makedirs(output_path, exist_ok=True)
         with open(output_filepath, "w") as markdown_file:
             markdown_txt = self.monster.as_homebrewery_v3_markdown_2024(
-                wide_statblock=self._view.checkbox_wide_statblock.isChecked()
+                wide_statblock=wide_statblock
             )
             markdown_file.write(markdown_txt)
-        print(f"File write complete: {output_path}")
+        print(f"File write complete: {output_filepath}")
 
 
 # TODO: Whenever generating AI, use progress bar, logs, popup errors, code cleanup

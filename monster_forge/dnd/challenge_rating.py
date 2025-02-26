@@ -65,7 +65,6 @@ class ChallengeRating:
 
     @property
     def display(self) -> str:
-        formatted_experience_points = f
         if isinstance(self.rating, float):
             numerator, denominator = self.rating.as_integer_ratio()
             if denominator == 1:
