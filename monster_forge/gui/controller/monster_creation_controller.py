@@ -63,7 +63,9 @@ class MonsterCreationController(QWidget):
         # Title
         self.setWindowTitle("Create New Monster")
         # AI generation progress bar
-        self._view.progressbar_ai_query.setVisible(False)
+        self._view.progressbar_ai_query.setVisible(
+            False
+        )  # TODO: Make this functional when we query AI
         # Monster name
         self._view.lineedit_name.textChanged.connect(self._name_changed)
         self._view.btn_suggest_name.clicked.connect(self._suggest_monster_names)
@@ -349,14 +351,17 @@ class MonsterCreationController(QWidget):
             action_title,
             action_description,
         )
-        ac = CombatCharacteristicController(action)
-        self._cc_controllers[action.title] = ac
-        ac.deleted.connect(partial(self._handler_cc_deleted, ac.cc))
-        self._view.tab_actions.layout().addWidget(ac)
+        self._add_characteristic(action)
         self._view.lineedit_action_name.clear()
         self._view.textedit_action_description.clear()
         if action.title not in self.monster.actions:
             self.monster.actions[action.title] = action
+
+    def _add_characteristic(self, cc: CombatCharacteristic) -> None:
+        ccc = CombatCharacteristicController(cc, parent=self)
+        self._cc_controllers[cc.title] = cc
+        ccc.deleted.connect(partial(self._handler_cc_deleted, ccc.cc))
+        self._view.tab_actions.layout().addWidget(ccc)
 
     def _btn_create_bonus_action_clicked(self) -> None:
         bonus_action_title = self._view.lineedit_action_name.text()
@@ -383,10 +388,7 @@ class MonsterCreationController(QWidget):
             bonus_action_title,
             bonus_action_description,
         )
-        bac = CombatCharacteristicController(bonus_action)
-        self._cc_controllers[bonus_action.title] = bac
-        bac.deleted.connect(partial(self._handler_cc_deleted, bac.cc))
-        self._view.tab_actions.layout().addWidget(bac)
+        self._add_characteristic(bonus_action)
         self._view.lineedit_action_name.clear()
         self._view.textedit_action_description.clear()
         if bonus_action.title not in self.monster.bonus_actions:
@@ -417,10 +419,7 @@ class MonsterCreationController(QWidget):
             reaction_title,
             reaction_description,
         )
-        bac = CombatCharacteristicController(reaction)
-        self._cc_controllers[reaction.title] = bac
-        bac.deleted.connect(partial(self._handler_cc_deleted, bac.cc))
-        self._view.tab_actions.layout().addWidget(bac)
+        self._add_characteristic(reaction)
         self._view.lineedit_action_name.clear()
         self._view.textedit_action_description.clear()
         if reaction.title not in self.monster.reactions:
@@ -453,10 +452,7 @@ class MonsterCreationController(QWidget):
             legendary_action_title,
             legendary_action_description,
         )
-        ac = CombatCharacteristicController(legendary_action)
-        self._cc_controllers[legendary_action.title] = ac
-        ac.deleted.connect(partial(self._handler_cc_deleted, ac.cc))
-        self._view.tab_actions.layout().addWidget(ac)
+        self._add_characteristic(legendary_action)
         self._view.lineedit_action_name.clear()
         self._view.textedit_action_description.clear()
         if legendary_action.title not in self.monster.legendary_actions:
@@ -498,7 +494,7 @@ class MonsterCreationController(QWidget):
         if trait.title not in self.monster.traits:
             self.monster.traits[trait.title] = trait
 
-    def _handler_cc_deleted(self, cc: CombatCharacteristic) -> None:
+    def _handler_cc_deleted(self, cc: CombatCharacteristic, pop: bool = True) -> None:
         controller = self._cc_controllers.get(cc.title, None)
         if controller is not None:
             self._view.tab_traits.layout().removeWidget(controller)
@@ -516,10 +512,15 @@ class MonsterCreationController(QWidget):
                     self.monster.legendary_actions.pop(cc.title, None)
                 case _:
                     raise NotImplementedError
-            self.monster.traits.pop(cc.title, None)
+            if pop:
+                self.monster.traits.pop(cc.title, None)
             print(f"Deleted combat characteristic: {cc.title}")
         else:
             print(f"Couldn't find widget for combat characteristic: {cc.title}")
+
+    def _clear_characteristics(self, pop: bool = False) -> None:
+        for ccc in self._cc_controllers.values():
+            self._handler_cc_deleted(ccc.cc, pop=pop)
 
     def _ac_changed(self, new_value: int) -> None:
         if self.monster.ac_tied_to_cr:
@@ -646,13 +647,19 @@ class MonsterCreationController(QWidget):
             load_successful = False
             with open(file_path, "r") as imported_file:
                 data = imported_file.read()
-                unpickled_monster: PickledMonsterData = jsonpickle.decode(data)
+                unpickled_monster: PickledMonsterData = jsonpickle.decode(
+                    data, keys=True
+                )
                 self.monster = unpickled_monster.monster
                 self.encounter = unpickled_monster.encounter
                 load_successful = True
             if load_successful:
                 self._view.lineedit_name.setText(self.monster.name)
                 self._view.textedit_description.setText(self.monster.description)
+                self._view.cb_encounter_size.blockSignals(True)
+                self._view.cb_encounter_difficulty.blockSignals(True)
+                self._view.spinbox_avg_party_level.blockSignals(True)
+                self._view.spinbox_num_pcs.blockSignals(True)
                 idx = next(
                     (
                         i
@@ -674,9 +681,13 @@ class MonsterCreationController(QWidget):
                 )
                 self._view.cb_encounter_difficulty.setCurrentIndex(idx)
                 self._view.spinbox_avg_party_level.setValue(
-                    self.encounter.avg_party_level
+                    self.encounter.avg_party_level or 1
                 )
-                self._view.spinbox_num_pcs.setValue(self.encounter.num_pcs)
+                self._view.spinbox_num_pcs.setValue(self.encounter.num_pcs or 1)
+                self._view.cb_encounter_size.blockSignals(False)
+                self._view.cb_encounter_difficulty.blockSignals(False)
+                self._view.spinbox_avg_party_level.blockSignals(False)
+                self._view.spinbox_num_pcs.blockSignals(False)
                 idx = next(
                     (
                         i
@@ -706,8 +717,9 @@ class MonsterCreationController(QWidget):
                     ),
                     -1,
                 )
+                self._view.cb_size.blockSignals(True)
                 self._view.cb_size.setCurrentIndex(idx)
-                self._calc_cr()
+                self._view.cb_size.blockSignals(False)
                 self._view.spinbox_walk_speed.setValue(
                     self.monster.speed.get(SpeedType.WALKING, 0)
                 )
@@ -724,14 +736,14 @@ class MonsterCreationController(QWidget):
                     self.monster.speed.get(SpeedType.BURROW, 0)
                 )
                 self._view.spinbox_str.setValue(
-                    self.monster.ability_scores.scores[Ability.STRENGTH]
+                    self.monster.ability_scores.scores.get(Ability.STRENGTH, 10)
                 )
                 self._view.checkbox_prof_st_str.setChecked(
                     self.monster.saving_throws.get(Ability.STRENGTH, Proficiency.NORMAL)
                     == Proficiency.PROFICIENT
                 )
                 self._view.spinbox_dex.setValue(
-                    self.monster.ability_scores.scores[Ability.DEXTERITY]
+                    self.monster.ability_scores.scores.get(Ability.DEXTERITY, 10)
                 )
                 self._view.checkbox_prof_st_dex.setChecked(
                     self.monster.saving_throws.get(
@@ -740,7 +752,7 @@ class MonsterCreationController(QWidget):
                     == Proficiency.PROFICIENT
                 )
                 self._view.spinbox_con.setValue(
-                    self.monster.ability_scores.scores[Ability.CONSTITUTION]
+                    self.monster.ability_scores.scores.get(Ability.CONSTITUTION, 10)
                 )
                 self._view.checkbox_prof_st_con.setChecked(
                     self.monster.saving_throws.get(
@@ -749,7 +761,7 @@ class MonsterCreationController(QWidget):
                     == Proficiency.PROFICIENT
                 )
                 self._view.spinbox_int.setValue(
-                    self.monster.ability_scores.scores[Ability.INTELLIGENCE]
+                    self.monster.ability_scores.scores.get(Ability.INTELLIGENCE, 10)
                 )
                 self._view.checkbox_prof_st_int.setChecked(
                     self.monster.saving_throws.get(
@@ -758,19 +770,20 @@ class MonsterCreationController(QWidget):
                     == Proficiency.PROFICIENT
                 )
                 self._view.spinbox_wis.setValue(
-                    self.monster.ability_scores.scores[Ability.WISDOM]
+                    self.monster.ability_scores.scores.get(Ability.WISDOM, 10)
                 )
                 self._view.checkbox_prof_st_wis.setChecked(
                     self.monster.saving_throws.get(Ability.WISDOM, Proficiency.NORMAL)
                     == Proficiency.PROFICIENT
                 )
                 self._view.spinbox_cha.setValue(
-                    self.monster.ability_scores.scores[Ability.CHARISMA]
+                    self.monster.ability_scores.scores.get(Ability.CHARISMA, 10)
                 )
                 self._view.checkbox_prof_st_cha.setChecked(
                     self.monster.saving_throws.get(Ability.CHARISMA, Proficiency.NORMAL)
                     == Proficiency.PROFICIENT
                 )
+                self._calc_cr()
                 self._view.listwidget_skills.clear()
                 for skill, prof in self.monster.skills.items():
                     self._add_skill(skill, prof)
@@ -794,10 +807,19 @@ class MonsterCreationController(QWidget):
                     self._view.spinbox_telepathy_range.setEnabled(
                         self.monster.telepathy[0]
                     )
+                self._clear_characteristics()
+                for action in self.monster.actions.values():
+                    self._add_characteristic(action)
+                for bonus_action in self.monster.bonus_actions.values():
+                    self._add_characteristic(bonus_action)
+                for reaction in self.monster.reactions.values():
+                    self._add_characteristic(reaction)
+                for legendary_action in self.monster.legendary_actions.values():
+                    self._add_characteristic(legendary_action)
 
     def _export_monster(self) -> None:
         pickled_monster_data = PickledMonsterData(self.monster, self.encounter)
-        pickled_monster = jsonpickle.encode(pickled_monster_data)
+        pickled_monster = jsonpickle.encode(pickled_monster_data, keys=True)
         filepath = self._output_folder / f"{self.monster.name}.statblock.json"
         with open(filepath, "w") as export_file:
             export_file.write(pickled_monster)
@@ -1420,4 +1442,4 @@ class MonsterCreationController(QWidget):
         print(f"File write complete: {output_path}")
 
 
-# TODO: Traits, Actions, Bonus Actions, Reactions, Legendary Actions, toggle for "has lair", tags, telepathy in the languages display etc.
+# TODO: Dice roll macros, has lair checkbox on import, senses spinbox range, senses import range
