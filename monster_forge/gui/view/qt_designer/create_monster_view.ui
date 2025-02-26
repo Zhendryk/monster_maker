@@ -892,65 +892,6 @@
         </layout>
        </item>
        <item>
-        <layout class="QGridLayout" name="gl_action_subtraits">
-         <property name="sizeConstraint">
-          <enum>QLayout::SetDefaultConstraint</enum>
-         </property>
-         <property name="topMargin">
-          <number>0</number>
-         </property>
-         <property name="bottomMargin">
-          <number>0</number>
-         </property>
-         <item row="0" column="0">
-          <widget class="QLabel" name="_lbl_action_subtype">
-           <property name="maximumSize">
-            <size>
-             <width>100</width>
-             <height>16777215</height>
-            </size>
-           </property>
-           <property name="text">
-            <string>Subtype:</string>
-           </property>
-          </widget>
-         </item>
-         <item row="2" column="0">
-          <widget class="QLabel" name="_lbl_use_charges_x">
-           <property name="text">
-            <string>Limited Use Charges (X):</string>
-           </property>
-          </widget>
-         </item>
-         <item row="1" column="1">
-          <widget class="QComboBox" name="cb_action_use_limitation"/>
-         </item>
-         <item row="1" column="0">
-          <widget class="QLabel" name="_lbl_use_limitation">
-           <property name="text">
-            <string>Usage Limitation:</string>
-           </property>
-          </widget>
-         </item>
-         <item row="2" column="1">
-          <widget class="QSpinBox" name="spinbox_use_charges_x"/>
-         </item>
-         <item row="0" column="1">
-          <widget class="QComboBox" name="cb_action_subtype"/>
-         </item>
-         <item row="3" column="0">
-          <widget class="QLabel" name="_lbl_use_charges_y">
-           <property name="text">
-            <string>Limited Use Charges (Y):</string>
-           </property>
-          </widget>
-         </item>
-         <item row="3" column="1">
-          <widget class="QSpinBox" name="spinbox_use_charges_y"/>
-         </item>
-        </layout>
-       </item>
-       <item>
         <widget class="QTextEdit" name="textedit_action_description"/>
        </item>
        <item>

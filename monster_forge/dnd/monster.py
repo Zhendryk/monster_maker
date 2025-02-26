@@ -410,15 +410,48 @@ class Monster:
 
     @property
     def bonus_actions_display(self) -> str:
-        return ""  # TODO: Implement me
+        alphabetical_bonus_actions = sorted(
+            self.bonus_actions.values(), key=lambda action: action.title.lower()
+        )
+        if alphabetical_bonus_actions:
+            bonus_actions_str = "\n:\n".join(
+                [
+                    bonus_action.homebrewery_v3_2024_markdown
+                    for bonus_action in alphabetical_bonus_actions
+                ]
+            )
+            return f"### Bonus Actions\n{bonus_actions_str}\n"
+        return "\n"
 
     @property
     def reactions_display(self) -> str:
-        return ""  # TODO: Implement me
+        alphabetical_reactions = sorted(
+            self.reactions.values(), key=lambda reaction: reaction.title.lower()
+        )
+        if alphabetical_reactions:
+            reactions_str = "\n:\n".join(
+                [
+                    reaction.homebrewery_v3_2024_markdown
+                    for reaction in alphabetical_reactions
+                ]
+            )
+            return f"### Reactions\n{reactions_str}\n"
+        return "\n"
 
     @property
     def legendary_actions_display(self) -> str:
-        return ""  # TODO: Implement me
+        alphabetical_legendary_actions = sorted(
+            self.actions.values(), key=lambda action: action.title.lower()
+        )
+        if alphabetical_legendary_actions:
+            legendary_actions_str = "\n:\n".join(
+                [
+                    legendary_action.homebrewery_v3_2024_markdown
+                    for legendary_action in alphabetical_legendary_actions
+                ]
+            )
+            return f"### Legendary Actions\n{legendary_actions_str}\n"
+        return "\n"
 
     @property
     def all_available_prompt_info(self) -> str:
@@ -490,6 +523,12 @@ class Monster:
             f"{self.traits_display}"
             "\n"
             f"{self.actions_display}"
+            "\n"
+            f"{self.bonus_actions_display}"
+            "\n"
+            f"{self.reactions_display}"
+            "\n"
+            f"{self.legendary_actions_display}"
             "\n"
             "}}\n"
         )

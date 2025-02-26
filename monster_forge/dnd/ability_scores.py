@@ -79,5 +79,7 @@ class AbilityScores:
                 if saving_throws[ability] != Proficiency.NORMAL:
                     return proficiency_bonus + ability_mod + calced_bonus
                 return ability_mod + calced_bonus
+            case "SPELLSAVE":
+                return 8 + proficiency_bonus + ability_mod
             case _:
                 pass

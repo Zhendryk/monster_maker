@@ -1,6 +1,5 @@
 from PyQt5.QtWidgets import QWidget, QFileDialog
 from PyQt5.QtGui import QPixmap
-from collections.abc import Sequence
 from PyQt5.QtCore import QObject, Qt
 import os
 from monster_forge.gui.view.create_monster_view import Ui_CreateMonsterView
@@ -32,8 +31,11 @@ from random import randint
 import jsonpickle
 from monster_forge.pickled_data import PickledMonsterData
 from monster_forge.dnd.action import (
-    all_action_templates,
+    get_all_templates,
     Action,
+    BonusAction,
+    Reaction,
+    LegendaryAction,
     CombatCharacteristic,
     CharacteristicType,
     Trait,
@@ -272,9 +274,9 @@ class MonsterCreationController(QWidget):
 
     def _configure_traits_actions_tab(self) -> None:
         # Some data for combobox population
-        self._all_action_templates = all_action_templates()
+        self._all_templates = get_all_templates()
         # Action presets
-        self._view.cb_action_presets.addItems(list(self._all_action_templates.keys()))
+        self._view.cb_action_presets.addItems(list(self._all_templates.keys()))
         self._view.btn_use_action_preset.clicked.connect(
             self._btn_use_action_preset_clicked
         )
@@ -300,11 +302,27 @@ class MonsterCreationController(QWidget):
         self._view.btn_generate_artwork.clicked.connect(self._generate_artwork)
 
     def _btn_use_action_preset_clicked(self) -> None:
-        template_name = self._view.cb_action_presets.currentText()
-        if template_name in self._all_action_templates:
-            self._view.textedit_action_description.setText(
-                self._all_action_templates[template_name]
-            )
+        template_label = self._view.cb_action_presets.currentText()
+        if template_label in self._all_templates:
+            template = self._all_templates[template_label]
+            match template.ctype:
+                case CharacteristicType.TRAIT:
+                    self._view.lineedit_action_name.setText(template.name)
+                    self._view.textedit_action_description.setText(template.description)
+                case CharacteristicType.ACTION:
+                    self._view.lineedit_action_name.setText(template.name)
+                    self._view.textedit_action_description.setText(template.description)
+                case CharacteristicType.BONUS_ACTION:
+                    self._view.lineedit_action_name.setText(template.name)
+                    self._view.textedit_action_description.setText(template.description)
+                case CharacteristicType.REACTION:
+                    self._view.lineedit_action_name.setText(template.name)
+                    self._view.textedit_action_description.setText(template.description)
+                case CharacteristicType.LEGENDARY_ACTION:
+                    self._view.lineedit_action_name.setText(template.name)
+                    self._view.textedit_action_description.setText(template.description)
+                case _:
+                    raise NotImplementedError
 
     def _btn_create_action_clicked(self) -> None:
         action_title = self._view.lineedit_action_name.text()
@@ -341,13 +359,108 @@ class MonsterCreationController(QWidget):
             self.monster.actions[action.title] = action
 
     def _btn_create_bonus_action_clicked(self) -> None:
-        pass  # TODO: Implement me
+        bonus_action_title = self._view.lineedit_action_name.text()
+        if not bonus_action_title:
+            return
+        bonus_action_description = self._view.textedit_action_description.toPlainText()
+        if not bonus_action_description:
+            return
+        if not self.monster.name:
+            print("monster name required, skipping...")
+            return
+        if not self.monster.ability_scores:
+            return
+        if self.monster.proficiency_bonus is None:
+            return
+        if not self.monster.saving_throws:
+            return
+        bonus_action = BonusAction(
+            self.monster.name,
+            self.monster.ability_scores,
+            self.monster.proficiency_bonus,
+            self.monster.saving_throws,
+            self._view.checkbox_has_lair.isChecked(),
+            bonus_action_title,
+            bonus_action_description,
+        )
+        bac = CombatCharacteristicController(bonus_action)
+        self._cc_controllers[bonus_action.title] = bac
+        bac.deleted.connect(partial(self._handler_cc_deleted, bac.cc))
+        self._view.tab_actions.layout().addWidget(bac)
+        self._view.lineedit_action_name.clear()
+        self._view.textedit_action_description.clear()
+        if bonus_action.title not in self.monster.bonus_actions:
+            self.monster.actions[bonus_action.title] = bonus_action
 
     def _btn_create_reaction_clicked(self) -> None:
-        pass  # TODO: Implement me
+        reaction_title = self._view.lineedit_action_name.text()
+        if not reaction_title:
+            return
+        reaction_description = self._view.textedit_action_description.toPlainText()
+        if not reaction_description:
+            return
+        if not self.monster.name:
+            print("monster name required, skipping...")
+            return
+        if not self.monster.ability_scores:
+            return
+        if self.monster.proficiency_bonus is None:
+            return
+        if not self.monster.saving_throws:
+            return
+        reaction = Reaction(
+            self.monster.name,
+            self.monster.ability_scores,
+            self.monster.proficiency_bonus,
+            self.monster.saving_throws,
+            self._view.checkbox_has_lair.isChecked(),
+            reaction_title,
+            reaction_description,
+        )
+        bac = CombatCharacteristicController(reaction)
+        self._cc_controllers[reaction.title] = bac
+        bac.deleted.connect(partial(self._handler_cc_deleted, bac.cc))
+        self._view.tab_actions.layout().addWidget(bac)
+        self._view.lineedit_action_name.clear()
+        self._view.textedit_action_description.clear()
+        if reaction.title not in self.monster.reactions:
+            self.monster.actions[reaction.title] = reaction
 
     def _btn_create_legendary_action_clicked(self) -> None:
-        pass  # TODO: Implement me
+        legendary_action_title = self._view.lineedit_action_name.text()
+        if not legendary_action_title:
+            return
+        legendary_action_description = (
+            self._view.textedit_action_description.toPlainText()
+        )
+        if not legendary_action_description:
+            return
+        if not self.monster.name:
+            print("monster name required, skipping...")
+            return
+        if not self.monster.ability_scores:
+            return
+        if self.monster.proficiency_bonus is None:
+            return
+        if not self.monster.saving_throws:
+            return
+        legendary_action = LegendaryAction(
+            self.monster.name,
+            self.monster.ability_scores,
+            self.monster.proficiency_bonus,
+            self.monster.saving_throws,
+            self._view.checkbox_has_lair.isChecked(),
+            legendary_action_title,
+            legendary_action_description,
+        )
+        ac = CombatCharacteristicController(legendary_action)
+        self._cc_controllers[legendary_action.title] = ac
+        ac.deleted.connect(partial(self._handler_cc_deleted, ac.cc))
+        self._view.tab_actions.layout().addWidget(ac)
+        self._view.lineedit_action_name.clear()
+        self._view.textedit_action_description.clear()
+        if legendary_action.title not in self.monster.legendary_actions:
+            self.monster.actions[legendary_action.title] = legendary_action
 
     def _btn_create_trait_clicked(self) -> None:
         trait_title = self._view.lineedit_action_name.text()

@@ -21,7 +21,7 @@ PATTERN_DICE_ROLL_CG_SIGN: Final[int] = 3
 PATTERN_DICE_ROLL_CG_BONUS: Final[int] = 4
 
 PATTERN_STAT_OPERATION: Final[re.Pattern] = re.compile(
-    r"\[(STR|DEX|CON|INT|WIS|CHA)\s(ATK|SAVE)(?:\s?([+\-])\s?(\d+))?\]"
+    r"\[(STR|DEX|CON|INT|WIS|CHA)\s(ATK|SAVE|SPELLSAVE)(?:\s?([+\-])\s?(\d+))?\]"
 )
 PATTERN_STAT_OPERATION_CG_STAT: Final[int] = 1
 PATTERN_STAT_OPERATION_CG_OPERATION: Final[int] = 2
