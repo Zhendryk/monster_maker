@@ -401,6 +401,17 @@ class Monster:
         alphabetical_actions = sorted(
             self.actions.values(), key=lambda action: action.title.lower()
         )
+        multiattack_action = next(
+            (
+                action
+                for action in alphabetical_actions
+                if action.title == "Multiattack"
+            ),
+            None,
+        )
+        if multiattack_action is not None:
+            alphabetical_actions.remove(multiattack_action)
+            alphabetical_actions.insert(0, multiattack_action)
         if alphabetical_actions:
             actions_str = "\n:\n".join(
                 [action.homebrewery_v3_2024_markdown for action in alphabetical_actions]
@@ -411,7 +422,8 @@ class Monster:
     @property
     def bonus_actions_display(self) -> str:
         alphabetical_bonus_actions = sorted(
-            self.bonus_actions.values(), key=lambda action: action.title.lower()
+            self.bonus_actions.values(),
+            key=lambda bonus_action: bonus_action.title.lower(),
         )
         if alphabetical_bonus_actions:
             bonus_actions_str = "\n:\n".join(
@@ -441,7 +453,8 @@ class Monster:
     @property
     def legendary_actions_display(self) -> str:
         alphabetical_legendary_actions = sorted(
-            self.actions.values(), key=lambda action: action.title.lower()
+            self.legendary_actions.values(),
+            key=lambda legendary_action: legendary_action.title.lower(),
         )
         if alphabetical_legendary_actions:
             legendary_actions_str = "\n:\n".join(
@@ -521,14 +534,9 @@ class Monster:
             "}}\n"
             "\n"
             f"{self.traits_display}"
-            "\n"
             f"{self.actions_display}"
-            "\n"
             f"{self.bonus_actions_display}"
-            "\n"
             f"{self.reactions_display}"
-            "\n"
             f"{self.legendary_actions_display}"
-            "\n"
             "}}\n"
         )

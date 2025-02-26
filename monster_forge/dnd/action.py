@@ -188,9 +188,9 @@ class CombatCharacteristic:
             self.description = self.description.replace(
                 phrase_to_capitalize, phrase_to_capitalize.capitalize()
             )
-        pieces = self.description.split(" ")
-        pieces[0] = pieces[0].capitalize()
-        self.description = " ".join(pieces)
+        # pieces = self.description.split(" ")
+        # pieces[0] = pieces[0].capitalize()
+        # self.description = " ".join(pieces)
 
     @property
     def homebrewery_v3_2024_markdown(self) -> str:

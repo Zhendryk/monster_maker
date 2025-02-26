@@ -390,7 +390,7 @@ class MonsterCreationController(QWidget):
         self._view.lineedit_action_name.clear()
         self._view.textedit_action_description.clear()
         if bonus_action.title not in self.monster.bonus_actions:
-            self.monster.actions[bonus_action.title] = bonus_action
+            self.monster.bonus_actions[bonus_action.title] = bonus_action
 
     def _btn_create_reaction_clicked(self) -> None:
         reaction_title = self._view.lineedit_action_name.text()
@@ -424,7 +424,7 @@ class MonsterCreationController(QWidget):
         self._view.lineedit_action_name.clear()
         self._view.textedit_action_description.clear()
         if reaction.title not in self.monster.reactions:
-            self.monster.actions[reaction.title] = reaction
+            self.monster.reactions[reaction.title] = reaction
 
     def _btn_create_legendary_action_clicked(self) -> None:
         legendary_action_title = self._view.lineedit_action_name.text()
@@ -460,7 +460,7 @@ class MonsterCreationController(QWidget):
         self._view.lineedit_action_name.clear()
         self._view.textedit_action_description.clear()
         if legendary_action.title not in self.monster.legendary_actions:
-            self.monster.actions[legendary_action.title] = legendary_action
+            self.monster.legendary_actions[legendary_action.title] = legendary_action
 
     def _btn_create_trait_clicked(self) -> None:
         trait_title = self._view.lineedit_action_name.text()
