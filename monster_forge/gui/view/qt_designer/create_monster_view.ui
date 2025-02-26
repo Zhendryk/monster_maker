@@ -903,6 +903,26 @@
        </item>
       </layout>
      </widget>
+     <widget class="QWidget" name="tab_actions">
+      <attribute name="title">
+       <string>Actions</string>
+      </attribute>
+     </widget>
+     <widget class="QWidget" name="tab_bonus_actions">
+      <attribute name="title">
+       <string>Bonus Actions</string>
+      </attribute>
+     </widget>
+     <widget class="QWidget" name="tab_reactions">
+      <attribute name="title">
+       <string>Reactions</string>
+      </attribute>
+     </widget>
+     <widget class="QWidget" name="tab_legendary_actions">
+      <attribute name="title">
+       <string>Legendary Actions</string>
+      </attribute>
+     </widget>
      <widget class="QWidget" name="tab_artwork">
       <attribute name="title">
        <string>Artwork</string>

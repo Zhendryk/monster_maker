@@ -227,7 +227,20 @@ class MonsterCreationController(QWidget):
         if not self.monster.name:
             print("monster name required, skipping...")
             return
-        trait = Trait(self.monster.name, trait_title, trait_description)
+        if not self.monster.ability_scores:
+            return
+        if self.monster.proficiency_bonus is None:
+            return
+        if not self.monster.saving_throws:
+            return
+        trait = Trait(
+            self.monster.name,
+            self.monster.ability_scores,
+            self.monster.proficiency_bonus,
+            self.monster.saving_throws,
+            trait_title,
+            trait_description,
+        )
         tc = TraitController(trait)
         self._trait_controllers[trait.title] = tc
         tc.deleted.connect(partial(self._handler_trait_deleted, tc.trait))

@@ -39,6 +39,18 @@ class Ability(DNDEnum):
     CHARISMA = auto()
 
 
+class ActionSubtype(DNDEnum):
+    MELEE_ATTACK_ROLL = auto()
+    RANGED_ATTACK_ROLL = auto()
+    MELEE_OR_RANGED_ATTACK_ROLL = auto()
+    STRENGTH_SAVING_THROW = auto()
+    DEXTERITY_SAVING_THROW = auto()
+    CONSTITUTION_SAVING_THROW = auto()
+    INTELLIGENCE_SAVING_THROW = auto()
+    WISDOM_SAVING_THROW = auto()
+    CHARISMA_SAVING_THROW = auto()
+
+
 class Alignment(DNDEnum):
     UNALIGNED = auto()
     LAWFUL_GOOD = auto()
@@ -110,7 +122,7 @@ class RollType(Enum):
     MAX = auto()
 
 
-class Die(Enum):
+class Die(DNDEnum):
     D4 = 4
     D6 = 6
     D8 = 8

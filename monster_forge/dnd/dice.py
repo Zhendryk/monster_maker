@@ -52,3 +52,19 @@ class Dice:
         }
         closest = min(distances, key=lambda k: distances[k])
         return Dice({monster_size.hit_die: closest})
+
+    @staticmethod
+    def calculate_avg_roll(
+        num_dice: int, die_type: Die, sign: str, bonus: int = 0
+    ) -> int:
+        dice = Dice({die_type: num_dice})
+        roll_bonus = bonus
+        if bonus != 0:
+            match sign:
+                case "+":
+                    roll_bonus = abs(bonus)
+                case "-":
+                    roll_bonus = -abs(bonus)
+                case _:
+                    raise NotImplementedError
+        return dice.average_value + roll_bonus
