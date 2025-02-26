@@ -1,6 +1,5 @@
 from __future__ import annotations
 from dataclasses import dataclass, field
-from monster_forge.dnd.trait import Trait
 from monster_forge.dnd.dice import Dice
 from monster_forge.dnd.ability_scores import AbilityScores
 from monster_forge.dnd.challenge_rating import ChallengeRating
@@ -18,7 +17,7 @@ from monster_forge.dnd.enums import (
     Skill,
     SpeedType,
 )
-from monster_forge.dnd.action import Action
+from monster_forge.dnd.action import Action, Trait
 
 
 @dataclass
@@ -391,18 +390,23 @@ class Monster:
             self.traits.values(), key=lambda trait: trait.title.lower()
         )
         if alphabetical_traits:
-            traits_str = "\n:".join(
-                [
-                    trait.as_homebrewery_v3_2024_markdown()
-                    for trait in alphabetical_traits
-                ]
+            traits_str = "\n:\n".join(
+                [trait.homebrewery_v3_2024_markdown for trait in alphabetical_traits]
             )
             return f"### Traits\n{traits_str}\n"
         return "\n"
 
     @property
     def actions_display(self) -> str:
-        return ""  # TODO: Implement me
+        alphabetical_actions = sorted(
+            self.actions.values(), key=lambda action: action.title.lower()
+        )
+        if alphabetical_actions:
+            actions_str = "\n:\n".join(
+                [action.homebrewery_v3_2024_markdown for action in alphabetical_actions]
+            )
+            return f"### Actions\n{actions_str}\n"
+        return "\n"
 
     @property
     def bonus_actions_display(self) -> str:
@@ -484,8 +488,8 @@ class Monster:
             "}}\n"
             "\n"
             f"{self.traits_display}"
-            "### Actions\n"
-            f"{self.actions_display}\n"  # TODO: Implement me
+            "\n"
+            f"{self.actions_display}"
             "\n"
             "}}\n"
         )

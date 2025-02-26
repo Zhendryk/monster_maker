@@ -7,9 +7,9 @@ from monster_forge.dnd.enums import (
     LimitedUsageType,
     Die,
 )
+from enum import Enum, auto
 from typing import Any
 from monster_forge.dnd.ability_scores import AbilityScores
-from monster_forge.dnd.damage import Damage
 from monster_forge.dnd.dice import Dice
 from monster_forge.dnd.constants import (
     PHRASES_TO_CAPITALIZE,
@@ -39,6 +39,14 @@ from monster_forge.dnd.constants import (
 )
 
 
+class CharacteristicType(Enum):
+    TRAIT = auto()
+    ACTION = auto()
+    BONUS_ACTION = auto()
+    REACTION = auto()
+    LEGENDARY_ACTION = auto()
+
+
 @dataclass
 class CombatCharacteristic:
     monster_name: str
@@ -48,6 +56,7 @@ class CombatCharacteristic:
     has_lair: bool
     title: str
     description: str
+    ctype: CharacteristicType
 
     def __post_init__(self) -> None:
         self.monster_name = " ".join(
@@ -55,19 +64,19 @@ class CombatCharacteristic:
         )
         self.title = " ".join([c.capitalize() for c in self.title.split(" ")])
         self._format_description()
-        if (
-            self.limited_use_type == LimitedUsageType.X_PER_DAY
-            and "x" not in self.limited_use_charges
-        ):
-            raise ValueError(
-                "x required in limited use charges if making a X_PER_DAY trait"
-            )
-        if self.limited_use_type == LimitedUsageType.RECHARGE_X_Y and (
-            "x" not in self.limited_use_charges or "y" not in self.limited_use_charges
-        ):
-            raise ValueError(
-                "x and y required in limited use charges if making a RECHARGE_X_Y trait"
-            )
+        # if (
+        #     self.limited_use_type == LimitedUsageType.X_PER_DAY
+        #     and "x" not in self.limited_use_charges
+        # ):
+        #     raise ValueError(
+        #         "x required in limited use charges if making a X_PER_DAY trait"
+        #     )
+        # if self.limited_use_type == LimitedUsageType.RECHARGE_X_Y and (
+        #     "x" not in self.limited_use_charges or "y" not in self.limited_use_charges
+        # ):
+        #     raise ValueError(
+        #         "x and y required in limited use charges if making a RECHARGE_X_Y trait"
+        #     )
 
     def _substitute_dice_roll(self, match: re.Match, add_sign: bool = False) -> str:
         num_dice = int(match.group(PATTERN_DICE_ROLL_CG_NUM_DICE))
@@ -149,7 +158,7 @@ class CombatCharacteristic:
             self._substitute_stat_operation, self.description
         )
         self.description = self.description.replace(
-            MACRO_MONSTER_NAME, self.host_creature_name
+            MACRO_MONSTER_NAME, self.monster_name
         )
         self.description = self.description.replace(
             MACRO_STR_MOD, str(self.ability_scores.strength_modifier)
@@ -188,6 +197,7 @@ class CombatCharacteristic:
 
 @dataclass
 class Trait(CombatCharacteristic):
+    ctype: CharacteristicType = field(default=CharacteristicType.TRAIT)
     limited_use_type: LimitedUsageType = field(default=LimitedUsageType.UNLIMITED)
     limited_use_charges: dict[str, int] = field(default_factory=dict)
     lair_charge_bonuses: dict[str, int] = field(default_factory=dict)
@@ -195,7 +205,7 @@ class Trait(CombatCharacteristic):
 
 @dataclass
 class Action(CombatCharacteristic):
-    subtype: ActionSubtype | None
+    ctype: CharacteristicType = field(default=CharacteristicType.ACTION)
 
 
 @dataclass

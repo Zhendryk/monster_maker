@@ -23,14 +23,21 @@ from monster_forge.dnd.encounter import Encounter, EncounterDifficulty, Encounte
 from monster_forge.dnd.challenge_rating import ChallengeRating
 from monster_forge.dnd.ability_scores import AbilityScores
 from monster_forge.dnd.monster import Monster
-from monster_forge.gui.controller.trait_controller import TraitController
-from monster_forge.dnd.trait import Trait
+from monster_forge.gui.controller.combat_characteristic_controller import (
+    CombatCharacteristicController,
+)
 from pathlib import Path
 from functools import partial
 from random import randint
 import jsonpickle
 from monster_forge.pickled_data import PickledMonsterData
-from monster_forge.dnd.action import all_action_templates, Action
+from monster_forge.dnd.action import (
+    all_action_templates,
+    Action,
+    CombatCharacteristic,
+    CharacteristicType,
+    Trait,
+)
 
 # Masquerade Demon
 # A demon who blends into the higher eschelons of society to hunt its prey. It regularly attends soirees and other elegant events to lure victims in with its charming personality and impeccable decorum.
@@ -45,7 +52,7 @@ class MonsterCreationController(QWidget):
         self.encounter = Encounter()
         self._mm = MonsterMaker()
         self._setup_UI()
-        self._trait_controllers: dict[str, TraitController] = {}
+        self._cc_controllers: dict[str, CombatCharacteristicController] = {}
         self._output_folder: Path = (
             Path(__file__).parent.parent.parent.parent / "generated_output"
         )
@@ -239,7 +246,38 @@ class MonsterCreationController(QWidget):
             )
 
     def _btn_create_action_clicked(self) -> None:
-        pass  # TODO: Implement me
+        action_title = self._view.lineedit_action_name.text()
+        if not action_title:
+            return
+        action_description = self._view.textedit_action_description.toPlainText()
+        if not action_description:
+            return
+        if not self.monster.name:
+            print("monster name required, skipping...")
+            return
+        if not self.monster.ability_scores:
+            return
+        if self.monster.proficiency_bonus is None:
+            return
+        if not self.monster.saving_throws:
+            return
+        action = Action(
+            self.monster.name,
+            self.monster.ability_scores,
+            self.monster.proficiency_bonus,
+            self.monster.saving_throws,
+            self._view.checkbox_has_lair.isChecked(),
+            action_title,
+            action_description,
+        )
+        ac = CombatCharacteristicController(action)
+        self._cc_controllers[action.title] = ac
+        ac.deleted.connect(partial(self._handler_cc_deleted, ac.cc))
+        self._view.tab_actions.layout().addWidget(ac)
+        self._view.lineedit_action_name.clear()
+        self._view.textedit_action_description.clear()
+        if action.title not in self.monster.actions:
+            self.monster.actions[action.title] = action
 
     def _btn_create_bonus_action_clicked(self) -> None:
         pass  # TODO: Implement me
@@ -273,28 +311,41 @@ class MonsterCreationController(QWidget):
             self.monster.ability_scores,
             self.monster.proficiency_bonus,
             self.monster.saving_throws,
+            self._view.checkbox_has_lair.isChecked(),
             trait_title,
             trait_description,
-            has_lair=self._view.checkbox_has_lair.isChecked(),
         )
-        tc = TraitController(trait)
-        self._trait_controllers[trait.title] = tc
-        tc.deleted.connect(partial(self._handler_trait_deleted, tc.trait))
-        self._view.tab_traits.layout().addWidget(tc)
-        self._view.lineedit_trait_name.clear()
-        self._view.textedit_trait_description.clear()
+        tc = CombatCharacteristicController(trait)
+        self._cc_controllers[trait.title] = tc
+        tc.deleted.connect(partial(self._handler_cc_deleted, tc.cc))
+        self._view.tab_actions.layout().addWidget(tc)
+        self._view.lineedit_action_name.clear()
+        self._view.textedit_action_description.clear()
         if trait.title not in self.monster.traits:
             self.monster.traits[trait.title] = trait
 
-    def _handler_trait_deleted(self, trait: Trait) -> None:
-        tc = self._trait_controllers.get(trait.title, None)
-        if tc is not None:
-            self._view.tab_traits.layout().removeWidget(tc)
-            tc.deleteLater()
-            self.monster.traits.pop(trait.title, None)
-            print(f"Deleted trait: {trait.title}")
+    def _handler_cc_deleted(self, cc: CombatCharacteristic) -> None:
+        controller = self._cc_controllers.get(cc.title, None)
+        if controller is not None:
+            self._view.tab_traits.layout().removeWidget(controller)
+            controller.deleteLater()
+            match cc.ctype:
+                case CharacteristicType.TRAIT:
+                    self.monster.traits.pop(cc.title, None)
+                case CharacteristicType.ACTION:
+                    self.monster.actions.pop(cc.title, None)
+                case CharacteristicType.BONUS_ACTION:
+                    self.monster.bonus_actions.pop(cc.title, None)
+                case CharacteristicType.REACTION:
+                    self.monster.reactions.pop(cc.title, None)
+                case CharacteristicType.LEGENDARY_ACTION:
+                    self.monster.legendary_actions.pop(cc.title, None)
+                case _:
+                    raise NotImplementedError
+            self.monster.traits.pop(cc.title, None)
+            print(f"Deleted combat characteristic: {cc.title}")
         else:
-            print(f"Couldn't find widget for trait: {trait.title}")
+            print(f"Couldn't find widget for combat characteristic: {cc.title}")
 
     def _ac_changed(self, new_value: int) -> None:
         if self.monster.ac_tied_to_cr:
