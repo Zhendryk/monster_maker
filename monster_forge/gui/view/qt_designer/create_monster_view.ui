@@ -194,68 +194,7 @@
        <string>General Info</string>
       </attribute>
       <layout class="QGridLayout" name="gridLayout">
-       <item row="1" column="0">
-        <widget class="QLabel" name="_lbl_alignment">
-         <property name="text">
-          <string>Alignment:</string>
-         </property>
-        </widget>
-       </item>
-       <item row="3" column="1">
-        <widget class="QLineEdit" name="lineedit_challenge_rating"/>
-       </item>
-       <item row="0" column="1">
-        <widget class="QComboBox" name="cb_creature_type"/>
-       </item>
-       <item row="2" column="1">
-        <widget class="QComboBox" name="cb_size"/>
-       </item>
-       <item row="2" column="0">
-        <widget class="QLabel" name="_lbl_size">
-         <property name="text">
-          <string>Size:</string>
-         </property>
-        </widget>
-       </item>
-       <item row="1" column="1">
-        <widget class="QComboBox" name="cb_alignment"/>
-       </item>
-       <item row="3" column="0">
-        <widget class="QLabel" name="_lbl_challenge_rating">
-         <property name="text">
-          <string>Challenge Rating:</string>
-         </property>
-        </widget>
-       </item>
-       <item row="0" column="2">
-        <widget class="QPushButton" name="btn_suggest_creature_type">
-         <property name="text">
-          <string>Suggest</string>
-         </property>
-        </widget>
-       </item>
-       <item row="2" column="2">
-        <widget class="QPushButton" name="btn_suggest_size">
-         <property name="text">
-          <string>Suggest</string>
-         </property>
-        </widget>
-       </item>
-       <item row="0" column="0">
-        <widget class="QLabel" name="_lbl_creature_type">
-         <property name="text">
-          <string>Creature Type:</string>
-         </property>
-        </widget>
-       </item>
-       <item row="1" column="2">
-        <widget class="QPushButton" name="btn_suggest_alignment">
-         <property name="text">
-          <string>Suggest</string>
-         </property>
-        </widget>
-       </item>
-       <item row="4" column="1">
+       <item row="5" column="1">
         <widget class="QSpinBox" name="spinbox_ac">
          <property name="enabled">
           <bool>false</bool>
@@ -268,38 +207,35 @@
          </property>
         </widget>
        </item>
+       <item row="4" column="0">
+        <widget class="QLabel" name="_lbl_challenge_rating">
+         <property name="text">
+          <string>Challenge Rating:</string>
+         </property>
+        </widget>
+       </item>
        <item row="3" column="2">
+        <widget class="QPushButton" name="btn_suggest_size">
+         <property name="text">
+          <string>Suggest</string>
+         </property>
+        </widget>
+       </item>
+       <item row="4" column="2">
         <widget class="QLabel" name="_lbl_per_monster_for_x_monsters">
          <property name="text">
           <string>per monster, for x monsters</string>
          </property>
         </widget>
        </item>
-       <item row="4" column="2">
-        <widget class="QCheckBox" name="checkbox_tie_ac_to_cr">
-         <property name="text">
-          <string>Tie to Challenge Rating</string>
-         </property>
-         <property name="checked">
-          <bool>true</bool>
-         </property>
-        </widget>
-       </item>
-       <item row="4" column="0">
+       <item row="5" column="0">
         <widget class="QLabel" name="_lbl_ac">
          <property name="text">
           <string>AC:</string>
          </property>
         </widget>
        </item>
-       <item row="5" column="0">
-        <widget class="QLabel" name="_lbl_hp">
-         <property name="text">
-          <string>HP:</string>
-         </property>
-        </widget>
-       </item>
-       <item row="5" column="2">
+       <item row="6" column="2">
         <widget class="QCheckBox" name="checkbox_tie_hp_to_cr">
          <property name="text">
           <string>Tie to Challenge Rating</string>
@@ -309,12 +245,86 @@
          </property>
         </widget>
        </item>
-       <item row="5" column="1">
+       <item row="6" column="1">
         <widget class="QLineEdit" name="lineedit_hp">
          <property name="enabled">
           <bool>false</bool>
          </property>
         </widget>
+       </item>
+       <item row="1" column="2">
+        <widget class="QPushButton" name="btn_suggest_creature_type">
+         <property name="text">
+          <string>Suggest</string>
+         </property>
+        </widget>
+       </item>
+       <item row="2" column="1">
+        <widget class="QComboBox" name="cb_alignment"/>
+       </item>
+       <item row="3" column="1">
+        <widget class="QComboBox" name="cb_size"/>
+       </item>
+       <item row="1" column="1">
+        <widget class="QComboBox" name="cb_creature_type"/>
+       </item>
+       <item row="2" column="0">
+        <widget class="QLabel" name="_lbl_alignment">
+         <property name="text">
+          <string>Alignment:</string>
+         </property>
+        </widget>
+       </item>
+       <item row="5" column="2">
+        <widget class="QCheckBox" name="checkbox_tie_ac_to_cr">
+         <property name="text">
+          <string>Tie to Challenge Rating</string>
+         </property>
+         <property name="checked">
+          <bool>true</bool>
+         </property>
+        </widget>
+       </item>
+       <item row="6" column="0">
+        <widget class="QLabel" name="_lbl_hp">
+         <property name="text">
+          <string>HP:</string>
+         </property>
+        </widget>
+       </item>
+       <item row="3" column="0">
+        <widget class="QLabel" name="_lbl_size">
+         <property name="text">
+          <string>Size:</string>
+         </property>
+        </widget>
+       </item>
+       <item row="2" column="2">
+        <widget class="QPushButton" name="btn_suggest_alignment">
+         <property name="text">
+          <string>Suggest</string>
+         </property>
+        </widget>
+       </item>
+       <item row="1" column="0">
+        <widget class="QLabel" name="_lbl_creature_type">
+         <property name="text">
+          <string>Creature Type:</string>
+         </property>
+        </widget>
+       </item>
+       <item row="4" column="1">
+        <widget class="QLineEdit" name="lineedit_challenge_rating"/>
+       </item>
+       <item row="0" column="0">
+        <widget class="QLabel" name="_lbl_tags">
+         <property name="text">
+          <string>Tags:</string>
+         </property>
+        </widget>
+       </item>
+       <item row="0" column="1">
+        <widget class="QLineEdit" name="lineedit_tags"/>
        </item>
       </layout>
      </widget>

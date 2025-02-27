@@ -114,6 +114,8 @@ class MonsterCreationController(QWidget):
         self._view.spinbox_num_pcs.valueChanged.connect(self._calc_cr)
 
     def _configure_general_info_tab(self) -> None:
+        # Tags
+        self._view.lineedit_tags.textEdited.connect(self._tags_changed)
         # Creature Type
         self._view.cb_creature_type.addItems(
             sorted([mt.display_name for mt in CreatureType])
@@ -376,6 +378,18 @@ class MonsterCreationController(QWidget):
         if existing_widget:
             self._view.tab_actions.layout().removeWidget(existing_widget)
         self._view.tab_actions.layout().addWidget(ccc)
+
+    def _tags_changed(self, new_text: str) -> str:
+        if new_text:
+            self.monster.tags = sorted(
+                [
+                    " ".join([token.capitalize() for token in tag.strip().split(" ")])
+                    for tag in new_text.strip().split(",")
+                ],
+                key=lambda tag: tag.lower(),
+            )
+        else:
+            self.monster.tags.clear()
 
     def _btn_create_bonus_action_clicked(self) -> None:
         bonus_action_title = self._view.lineedit_action_name.text()
@@ -670,6 +684,9 @@ class MonsterCreationController(QWidget):
             if load_successful:
                 self._view.lineedit_name.setText(self.monster.name)
                 self._view.textedit_description.setText(self.monster.description)
+                self._view.lineedit_tags.setText(
+                    ", ".join(self.monster.tags) if self.monster.tags else ""
+                )
                 if self.monster.challenge_rating is not None:
                     self._view.checkbox_has_lair.setChecked(
                         self.monster.challenge_rating.has_lair
@@ -1520,3 +1537,4 @@ class MonsterCreationController(QWidget):
 
 
 # TODO: Whenever generating AI, use progress bar, logs, popup errors, code cleanup
+# TODO: Fix LANGUAGE_PLUS_X handling

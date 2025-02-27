@@ -288,10 +288,6 @@ class Monster:
         return saving_throw_expertise == Proficiency.EXPERTISE
 
     @property
-    def tags_display(self) -> str:
-        return ", ".join(self.tags) if self.tags else ""
-
-    @property
     def speed_display(self) -> str:
         retval = ""
         walk_speed = f"{self.speed[SpeedType.WALKING]} ft."
@@ -335,7 +331,8 @@ class Monster:
                 case _:
                     raise NotImplementedError
             retval.append(f"{skill.display_name} +{total_bonus}")
-        return ", ".join(retval)
+        skills = ", ".join(retval)
+        return f"**Skills** :: {skills}\n" if skills else ""
 
     @property
     def resistances_display(self) -> str:
@@ -347,7 +344,11 @@ class Monster:
             ],
             key=lambda x: x.lower(),
         )
-        return ", ".join(dmg_resistances)
+        return (
+            f"**Resistances** :: {', '.join(dmg_resistances)}\n"
+            if dmg_resistances
+            else ""
+        )
 
     @property
     def senses_display(self) -> str:
@@ -359,11 +360,12 @@ class Monster:
             ],
             key=lambda x: x.lower(),
         )
-        return (
+        senses = (
             ", ".join(alphabetical_senses)
             + "; "
             + f"Passive Perception {self.passive_perception}"
         )
+        return f"**Senses** :: {senses}\n"
 
     @property
     def immunities_display(self) -> str:
@@ -383,11 +385,22 @@ class Monster:
             ],
             key=lambda x: x.lower(),
         )
-        return ", ".join(dmg_immunities) + "; " + ", ".join(condition_immunities)
+        immunities = ", ".join(dmg_immunities) + "; " + ", ".join(condition_immunities)
+        return (
+            f"**Immunities** :: {immunities}\n"
+            if dmg_immunities or condition_immunities
+            else ""
+        )
 
     @property
     def languages_display(self) -> str:
-        return ", ".join([l.display_name for l in self.languages])
+        return (
+            (
+                f"**Languages** :: {', '.join([l.display_name for l in self.languages])}\n"
+            )
+            if self.languages
+            else ""
+        )
 
     @property
     def traits_display(self) -> str:
@@ -472,6 +485,12 @@ class Monster:
         return "\n"
 
     @property
+    def tags_display(self) -> str:
+        if self.tags:
+            return f" ({', '.join(self.tags)})"
+        return ""
+
+    @property
     def all_available_prompt_info(self) -> str:
         strs = []
         for lbl, value in {
@@ -531,10 +550,11 @@ class Monster:
             f"|Cha| {self.cha} | {self._stat_display(self.cha_mod)} | {self._stat_display(self.cha_save)} |\n"
             "}}\n"
             "\n"
-            f"**Skills** :: {self.skills_display}\n"
-            f"**Resistances** :: {self.resistances_display}\n"
-            f"**Senses** :: {self.senses_display}\n"
-            f"**Languages** :: {self.languages_display}\n"
+            f"{self.skills_display}"
+            f"{self.resistances_display}"
+            f"{self.immunities_display}"
+            f"{self.senses_display}"
+            f"{self.languages_display}"
             f"**CR** :: {self.challenge_rating.display}\n"
             "}}\n"
             "\n"
