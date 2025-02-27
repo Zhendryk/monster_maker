@@ -363,13 +363,18 @@ class MonsterCreationController(QWidget):
         self._add_characteristic(action)
         self._view.lineedit_action_name.clear()
         self._view.textedit_action_description.clear()
-        if action.title not in self.monster.actions:
-            self.monster.actions[action.title] = action
+        self.monster.actions[action.title] = action
 
     def _add_characteristic(self, cc: CombatCharacteristic) -> None:
-        ccc = CombatCharacteristicController(cc, parent=self)
+        ccc = CombatCharacteristicController(cc, parent=self._view.tab_actions)
         self._cc_controllers[cc.title] = ccc
         ccc.deleted.connect(partial(self._handler_cc_deleted, ccc.cc))
+        ccc.edit.connect(partial(self._handler_cc_edit_requested, ccc.cc))
+        existing_widget = self._view.tab_actions.findChild(
+            CombatCharacteristicController, cc.title
+        )
+        if existing_widget:
+            self._view.tab_actions.layout().removeWidget(existing_widget)
         self._view.tab_actions.layout().addWidget(ccc)
 
     def _btn_create_bonus_action_clicked(self) -> None:
@@ -400,8 +405,7 @@ class MonsterCreationController(QWidget):
         self._add_characteristic(bonus_action)
         self._view.lineedit_action_name.clear()
         self._view.textedit_action_description.clear()
-        if bonus_action.title not in self.monster.bonus_actions:
-            self.monster.bonus_actions[bonus_action.title] = bonus_action
+        self.monster.bonus_actions[bonus_action.title] = bonus_action
 
     def _btn_create_reaction_clicked(self) -> None:
         reaction_title = self._view.lineedit_action_name.text()
@@ -431,8 +435,7 @@ class MonsterCreationController(QWidget):
         self._add_characteristic(reaction)
         self._view.lineedit_action_name.clear()
         self._view.textedit_action_description.clear()
-        if reaction.title not in self.monster.reactions:
-            self.monster.reactions[reaction.title] = reaction
+        self.monster.reactions[reaction.title] = reaction
 
     def _btn_create_legendary_action_clicked(self) -> None:
         legendary_action_title = self._view.lineedit_action_name.text()
@@ -464,8 +467,7 @@ class MonsterCreationController(QWidget):
         self._add_characteristic(legendary_action)
         self._view.lineedit_action_name.clear()
         self._view.textedit_action_description.clear()
-        if legendary_action.title not in self.monster.legendary_actions:
-            self.monster.legendary_actions[legendary_action.title] = legendary_action
+        self.monster.legendary_actions[legendary_action.title] = legendary_action
 
     def _btn_create_trait_clicked(self) -> None:
         trait_title = self._view.lineedit_action_name.text()
@@ -497,8 +499,7 @@ class MonsterCreationController(QWidget):
         self._add_characteristic(trait)
         self._view.lineedit_action_name.clear()
         self._view.textedit_action_description.clear()
-        if trait.title not in self.monster.traits:
-            self.monster.traits[trait.title] = trait
+        self.monster.traits[trait.title] = trait
 
     def _handler_cc_deleted(self, cc: CombatCharacteristic, pop: bool = True) -> None:
         controller = self._cc_controllers.get(cc.title, None)
@@ -526,6 +527,10 @@ class MonsterCreationController(QWidget):
             print(f"Deleted combat characteristic: {cc.title}")
         else:
             print(f"Couldn't find widget for combat characteristic: {cc.title}")
+
+    def _handler_cc_edit_requested(self, cc: CombatCharacteristic) -> None:
+        self._view.lineedit_action_name.setText(cc.title)
+        self._view.textedit_action_description.setText(cc.description)
 
     def _clear_characteristics(self, pop: bool = False) -> None:
         for ccc in self._cc_controllers.values():
@@ -625,7 +630,7 @@ class MonsterCreationController(QWidget):
         self._view.lineedit_challenge_rating.setText(str(self.encounter.monster_cr))
         self.monster.challenge_rating = ChallengeRating(
             self.encounter.monster_cr,
-            self._view.checkbox_has_lair.isChecked() == Qt.CheckState.Checked,
+            self._view.checkbox_has_lair.isChecked(),
         )
         self._view._lbl_per_monster_for_x_monsters.setText(
             f"per monster, for {self.encounter.num_monsters} monsters"

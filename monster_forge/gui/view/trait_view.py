@@ -21,6 +21,9 @@ class Ui_TraitView(object):
         self.lbl_trait.setText("")
         self.lbl_trait.setObjectName("lbl_trait")
         self.horizontalLayout.addWidget(self.lbl_trait)
+        self.btn_edit_trait = QtWidgets.QPushButton(TraitView)
+        self.btn_edit_trait.setObjectName("btn_edit_trait")
+        self.horizontalLayout.addWidget(self.btn_edit_trait)
         self.btn_delete_trait = QtWidgets.QPushButton(TraitView)
         self.btn_delete_trait.setObjectName("btn_delete_trait")
         self.horizontalLayout.addWidget(self.btn_delete_trait)
@@ -31,4 +34,5 @@ class Ui_TraitView(object):
     def retranslateUi(self, TraitView):
         _translate = QtCore.QCoreApplication.translate
         TraitView.setWindowTitle(_translate("TraitView", "Form"))
+        self.btn_edit_trait.setText(_translate("TraitView", "Edit"))
         self.btn_delete_trait.setText(_translate("TraitView", "Delete"))

@@ -61,6 +61,13 @@ class Ability(DNDEnum):
         raise ValueError(f"Invalid Ability abbreviation: {abbreviation}")
 
 
+class ActionType(DNDEnum):
+    ACTION = auto()
+    BONUS_ACTION = auto()
+    REACTION = auto()
+    LEGENDARY_ACTION = auto()
+
+
 class ActionSubtype(DNDEnum):
     MELEE_ATTACK_ROLL = auto()
     RANGED_ATTACK_ROLL = auto()
@@ -121,6 +128,19 @@ class CreatureType(DNDEnum):
     UNDEAD = auto()
 
 
+class CoverType(DNDEnum):
+    HALF_COVER = auto()
+    THREE_QUARTERS_COVER = auto()
+    FULL_COVER = auto()
+
+
+class DamageArea(DNDEnum):
+    CONE = auto()
+    SPHERE = auto()
+    LINE = auto()
+    EMANATION = auto()
+
+
 class DamageType(DNDEnum):
     ACID = auto()
     COLD = auto()
@@ -154,7 +174,7 @@ class Die(DNDEnum):
 
     @property
     def avg_value(self) -> float:
-        return float(self.value + 1) / 2
+        return float((self.value + 1) / 2)
 
     @property
     def max_value(self) -> int:
@@ -178,6 +198,14 @@ class Die(DNDEnum):
                 return math.floor(self.avg_value * num_dice)
             case _:
                 raise NotImplementedError
+
+
+class Hazard(DNDEnum):
+    BURNING = auto()
+    DEHYDRATION = auto()
+    FALLING = auto()
+    MALNUTRITION = auto()
+    SUFFOCATION = auto()
 
 
 class LanguageProficiency(DNDEnum):
@@ -238,6 +266,12 @@ class Language(DNDEnum):
         raise ValueError(f"invalid {cls.__name__}: {name}")
 
 
+class LightingCondition(DNDEnum):
+    BRIGHT_LIGHT = auto()
+    DIM_LIGHT = auto()
+    DARKNESS = auto()
+
+
 class LimitedUsageType:
     UNLIMITED = auto()
     X_PER_DAY = auto()
@@ -245,6 +279,11 @@ class LimitedUsageType:
     RECHARGE_AFTER_SHORT_REST = auto()
     RECHARGE_AFTER_LONG_REST = auto()
     RECHARGE_AFTER_SHORT_OR_LONG_REST = auto()
+
+
+class ObscurityLevel(DNDEnum):
+    LIGHTLY_OBSCURED = auto()
+    HEAVILY_OBSCURED = auto()
 
 
 class Proficiency(DNDEnum):

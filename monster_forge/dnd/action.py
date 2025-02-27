@@ -1,43 +1,11 @@
-from dataclasses import dataclass, field
-import re
-from monster_forge.dnd.enums import (
-    Ability,
-    Proficiency,
-    LimitedUsageType,
-    Die,
-)
-from enum import Enum, auto
 from typing import Final
+from enum import Enum, auto
 from collections.abc import Sequence
-from monster_forge.dnd.ability_scores import AbilityScores
-from monster_forge.dnd.dice import Dice
-from monster_forge.dnd.constants import (
-    PHRASES_TO_CAPITALIZE,
-    MACRO_MONSTER_NAME,
-    MACRO_STR_MOD,
-    MACRO_DEX_MOD,
-    MACRO_CON_MOD,
-    MACRO_INT_MOD,
-    MACRO_WIS_MOD,
-    MACRO_CHA_MOD,
-    PATTERN_DICE_ROLL,
-    PATTERN_DICE_ROLL_CG_NUM_DICE,
-    PATTERN_DICE_ROLL_CG_DIE_TYPE,
-    PATTERN_DICE_ROLL_CG_SIGN,
-    PATTERN_DICE_ROLL_CG_BONUS,
-    PATTERN_STAT_OPERATION,
-    PATTERN_STAT_OPERATION_CG_STAT,
-    PATTERN_STAT_OPERATION_CG_OPERATION,
-    PATTERN_STAT_OPERATION_CG_SIGN,
-    PATTERN_STAT_OPERATION_CG_BONUS,
-    PATTERN_STAT_ATTACK,
-    PATTERN_STAT_ATTACK_CG_STAT,
-    PATTERN_STAT_ATTACK_CG_NUM_DICE,
-    PATTERN_STAT_ATTACK_CG_DIE_TYPE,
-    PATTERN_STAT_ATTACK_CG_SIGN,
-    PATTERN_STAT_ATTACK_CG_BONUS,
-)
 from functools import cached_property
+from dataclasses import dataclass, field
+from monster_forge.dnd.ability_scores import AbilityScores
+from monster_forge.dnd.enums import Ability, Proficiency, LimitedUsageType
+from monster_forge.dnd.macros import format_keyword_phrases, resolve_all_macros
 
 
 class CharacteristicType(Enum):
@@ -63,108 +31,18 @@ class CombatCharacteristic:
         self.monster_name = " ".join(
             [c.capitalize() for c in self.monster_name.split(" ")]
         )
-        self.title = " ".join([c.capitalize() for c in self.title.split(" ")])
+        # self.title = " ".join([c.capitalize() for c in self.title.split(" ")])
         self._format_description()
-
-    def _substitute_dice_roll(self, match: re.Match, add_sign: bool = False) -> str:
-        num_dice = int(match.group(PATTERN_DICE_ROLL_CG_NUM_DICE))
-        die_type = Die.from_name(match.group(PATTERN_DICE_ROLL_CG_DIE_TYPE))
-        sign = match.group(PATTERN_DICE_ROLL_CG_SIGN)
-        bonus = match.group(PATTERN_DICE_ROLL_CG_BONUS)
-        bonus = int(bonus) or 0
-        dice_roll_calculated = Dice.calculate_avg_roll(num_dice, die_type, sign, bonus)
-        bonus_str = f" + {bonus}" if sign and bonus else ""
-        return f"{dice_roll_calculated} ({num_dice}{die_type.name.lower()}{bonus_str})"
-
-    def _substitute_stat_attack(self, match: re.match, add_sign: bool = True) -> str:
-        stat = Ability.from_abbreviation(match.group(PATTERN_STAT_ATTACK_CG_STAT))
-        num_dice = int(match.group(PATTERN_STAT_ATTACK_CG_NUM_DICE))
-        die_type = Die.from_name(match.group(PATTERN_STAT_ATTACK_CG_DIE_TYPE))
-        sign = match.group(PATTERN_STAT_ATTACK_CG_SIGN)
-        bonus = match.group(PATTERN_STAT_ATTACK_CG_BONUS)
-        calced_bonus = 0
-        if sign and bonus is not None:
-            match sign:
-                case "+":
-                    calced_bonus = abs(bonus)
-                case "-":
-                    calced_bonus = -abs(bonus)
-                case _:
-                    raise NotImplementedError
-        dice = Dice({die_type: num_dice})
-        attack_bonus = (
-            self.ability_scores._calculate_modifier(self.ability_scores.scores[stat])
-            + self.proficiency_bonus
-            + calced_bonus
-        )
-        damage_roll_calculated = dice.average_value + attack_bonus
-        bonus_str = f" + {calced_bonus}" if sign and calced_bonus else ""
-        return (
-            f"{damage_roll_calculated} ({num_dice}{die_type.name.lower()}{bonus_str})"
-        )
-
-    def _substitute_stat_operation(self, match: re.Match, add_sign: bool = True) -> str:
-        stat = match.group(PATTERN_STAT_OPERATION_CG_STAT)
-        operation = match.group(PATTERN_STAT_OPERATION_CG_OPERATION)
-        sign = match.group(PATTERN_STAT_OPERATION_CG_SIGN)
-        bonus = match.group(PATTERN_STAT_OPERATION_CG_BONUS)
-        if bonus is not None:
-            bonus = int(bonus)
-        stat_operation_calculated = self.ability_scores.calculate_stat_operation(
-            self.proficiency_bonus,
-            self.saving_throws,
-            stat,
-            operation,
-            sign=sign,
-            bonus=bonus,
-        )
-        if add_sign:
-            return (
-                f"+{stat_operation_calculated}"
-                if stat_operation_calculated >= 0
-                else f"-{stat_operation_calculated}"
-            )
-        return str(stat_operation_calculated)
-
-    def _resolve_macros(self) -> None:
-        self.description = PATTERN_DICE_ROLL.sub(
-            self._substitute_dice_roll, self.description
-        )
-        self.description = PATTERN_STAT_ATTACK.sub(
-            self._substitute_stat_attack, self.description
-        )
-        self.description = PATTERN_STAT_OPERATION.sub(
-            self._substitute_stat_operation, self.description
-        )
-        self.description = self.description.replace(
-            MACRO_MONSTER_NAME, self.monster_name
-        )
-        self.description = self.description.replace(
-            MACRO_STR_MOD, str(self.ability_scores.strength_modifier)
-        )
-        self.description = self.description.replace(
-            MACRO_DEX_MOD, str(self.ability_scores.dexterity_modifier)
-        )
-        self.description = self.description.replace(
-            MACRO_CON_MOD, str(self.ability_scores.constitution_modifier)
-        )
-        self.description = self.description.replace(
-            MACRO_INT_MOD, str(self.ability_scores.intelligence_modifier)
-        )
-        self.description = self.description.replace(
-            MACRO_WIS_MOD, str(self.ability_scores.wisdom_modifier)
-        )
-        self.description = self.description.replace(
-            MACRO_CHA_MOD, str(self.ability_scores.charisma_modifier)
-        )
 
     def _format_description(self) -> None:
         self.description = self.description.strip().rstrip(".")
-        self._resolve_macros()
-        for phrase_to_capitalize in PHRASES_TO_CAPITALIZE:
-            self.description = self.description.replace(
-                phrase_to_capitalize, phrase_to_capitalize.capitalize()
-            )
+        self.description = format_keyword_phrases(self.description)
+        self.description = resolve_all_macros(
+            self.description,
+            self.monster_name,
+            self.ability_scores,
+            self.proficiency_bonus,
+        )
 
     @property
     def homebrewery_v3_2024_markdown(self) -> str:

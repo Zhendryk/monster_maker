@@ -54,6 +54,7 @@ class ChallengeRating:
         return CR_AC[self.lair_rating]
 
     def hit_points(self, ability_scores: AbilityScores, monster_size: Size) -> str:
+        # TODO: See if these calculations are correct, seems a little high
         if self.rating < 1:
             hp = math.ceil(30 * math.sqrt(self.rating))
         elif self.rating >= 1 and self.rating <= 19:
@@ -69,11 +70,11 @@ class ChallengeRating:
             numerator, denominator = self.rating.as_integer_ratio()
             if denominator == 1:
                 if self.has_lair:
-                    return f"{numerator} (XP {self.experience_points:,}, or {self.lair_xp:,} in Lair; PB +{self.proficiency_bonus})"
+                    return f"{numerator} (XP {self.experience_points:,}, or {self.lair_xp:,} in lair; PB +{self.proficiency_bonus})"
                 return f"{numerator} (XP {self.experience_points:,}; PB +{self.proficiency_bonus})"
             if self.has_lair:
-                return f"{numerator}/{denominator} (XP {self.experience_points:,}, or {self.lair_xp:,} in Lair; PB +{self.proficiency_bonus})"
+                return f"{numerator}/{denominator} (XP {self.experience_points:,}, or {self.lair_xp:,} in lair; PB +{self.proficiency_bonus})"
             return f"{numerator}/{denominator} (XP {self.experience_points:,}; PB +{self.proficiency_bonus})"
         elif self.has_lair:
-            return f"{self.rating} (XP {self.experience_points:,}, or {self.lair_xp:,} in Lair; PB +{self.proficiency_bonus})"
+            return f"{self.rating} (XP {self.experience_points:,}, or {self.lair_xp:,} in lair; PB +{self.proficiency_bonus})"
         return f"{self.rating} (XP {self.experience_points:,}; PB +{self.proficiency_bonus})"

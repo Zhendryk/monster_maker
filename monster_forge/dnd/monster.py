@@ -64,6 +64,11 @@ class Monster:
         self.ac_tied_to_cr = True
         self.hp_tied_to_cr = True
 
+    def _stat_display(self, stat: int | None) -> str:
+        if stat is None:
+            return ""
+        return f"+{stat}" if stat >= 0 else str(stat)
+
     @property
     def in_lair(self) -> bool | None:
         if self.has_required_fields(["challenge_rating"]):
@@ -512,18 +517,18 @@ class Monster:
             "{{tables\n"
             "|   |   | MOD  | SAVE |\n"
             "|:--|:-:|:----:|:----:|\n"
-            f"|Str| {self.strength} | {self.strength_mod} | {self.strength_save} |\n"
-            f"|Int| {self.intelligence} | {self.intelligence_mod} | {self.intelligence_save} |\n"
+            f"|Str| {self.strength} | {self._stat_display(self.strength_mod)} | {self._stat_display(self.strength_save)} |\n"
+            f"|Int| {self.intelligence} | {self._stat_display(self.intelligence_mod)} | {self._stat_display(self.intelligence_save)} |\n"
             "\n"
             "|   |   | MOD  | SAVE |\n"
             "|:--|:-:|:----:|:----:|\n"
-            f"|Dex| {self.dex} | {self.dex_mod} | {self.dex_save} |\n"
-            f"|Wis| {self.wis} | {self.wis_mod} | {self.wis_save} |\n"
+            f"|Dex| {self.dex} | {self._stat_display(self.dex_mod)} | {self._stat_display(self.dex_save)} |\n"
+            f"|Wis| {self.wis} | {self._stat_display(self.wis_mod)} | {self._stat_display(self.wis_save)} |\n"
             "\n"
             "|   |   | MOD  | SAVE |\n"
             "|:--|:-:|:----:|:----:|\n"
-            f"|Con| {self.con} | {self.con_mod} | {self.con_save} |\n"
-            f"|Cha| {self.cha} | {self.cha_mod} | {self.cha_save} |\n"
+            f"|Con| {self.con} | {self._stat_display(self.con_mod)} | {self._stat_display(self.con_save)} |\n"
+            f"|Cha| {self.cha} | {self._stat_display(self.cha_mod)} | {self._stat_display(self.cha_save)} |\n"
             "}}\n"
             "\n"
             f"**Skills** :: {self.skills_display}\n"
