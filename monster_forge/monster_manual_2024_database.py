@@ -1,7 +1,9 @@
+from __future__ import annotations
 import pandas as pd
 from pathlib import Path
 from enum import Enum, auto
 from monster_forge.dnd.enums import Size, CreatureType
+from collections.abc import Sequence
 
 MonsterDataType = str | float | int | bool | Size | CreatureType
 
@@ -13,22 +15,22 @@ class OperationType(Enum):
     MIN = auto()
     MAX = auto()
 
+    @property
+    def display_name(self) -> str:
+        return " ".join([token.capitalize() for token in self.name.split("_")])
+
+    @classmethod
+    def from_display_name(cls, name: str) -> OperationType:
+        for e in cls:
+            if e.name.lower() == "_".join([c for c in name.split(" ")]).lower():
+                return e
+        raise ValueError(f"Invalid {cls.__name__}: {name}")
+
 
 class MonsterManual2024Database:
     def __init__(self) -> None:
-        self._filepath = Path(__file__).resolve() / "data" / "mm_2024_stats.csv"
-        self._df = self._read_monster_csv(self._filepath)
-        if self._df is None:
-            raise RuntimeError
-
-    def _read_monster_csv(self, file_path: str) -> pd.DataFrame | None:
-        """
-        Reads a CSV file containing monster data and ensures correct data types.
-
-        :param file_path: Path to the CSV file.
-        :return: Pandas DataFrame with the correctly typed monster data.
-        """
-        column_names = [
+        self._filepath = Path(__file__).resolve().parent / "data" / "mm_2024_stats.csv"
+        self._column_names = [
             "Monster Name",
             "CR",
             "AC",
@@ -47,14 +49,25 @@ class MonsterManual2024Database:
             "Legendary",
             "Swarm",
         ]
+        self._df = self._read_monster_csv(self._filepath)
+        if self._df is None:
+            raise RuntimeError
 
+    def _read_monster_csv(self, file_path: str) -> pd.DataFrame | None:
+        """
+        Reads a CSV file containing monster data and ensures correct data types.
+
+        :param file_path: Path to the CSV file.
+        :return: Pandas DataFrame with the correctly typed monster data.
+        """
         try:
             df = pd.read_csv(
-                file_path, dtype={column_name: "string" for column_name in column_names}
+                file_path,
+                dtype={column_name: "string" for column_name in self._column_names},
             )
 
             # Convert to correct types manually to handle errors
-            for column in column_names:
+            for column in self._column_names:
                 match column:
                     case "Monster Name":
                         df[column] = df[column].astype(str)
@@ -93,13 +106,13 @@ class MonsterManual2024Database:
             return None
 
     def query(
-        df: pd.DataFrame,
+        self,
         filters: dict[str, MonsterDataType],
         aggregate_column_name: str,
         operation: OperationType = OperationType.MEAN,
     ) -> tuple[float, int]:
         try:
-            query_df = df.copy()
+            query_df = self._df.copy()
             for column_name, value in filters.items():
                 match column_name:
                     case "Size" | "Creature Type":
@@ -124,3 +137,7 @@ class MonsterManual2024Database:
                     raise NotImplementedError
         except Exception as e:
             raise ValueError(f"Error querying database: {e}") from e
+
+    @property
+    def column_names(self) -> Sequence[str]:
+        return self._column_names

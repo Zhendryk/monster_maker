@@ -40,6 +40,10 @@ from monster_forge.dnd.action import (
     CharacteristicType,
     Trait,
 )
+from monster_forge.monster_manual_2024_database import (
+    MonsterManual2024Database,
+    OperationType,
+)
 
 # Masquerade Demon
 # A demon who blends into the higher eschelons of society to hunt its prey. It regularly attends soirees and other elegant events to lure victims in with its charming personality and impeccable decorum.
@@ -53,6 +57,7 @@ class MonsterCreationController(QWidget):
         self.monster = Monster()
         self.encounter = Encounter()
         self._mm = MonsterMaker()
+        self._db = MonsterManual2024Database()
         self._setup_UI()
         self._cc_controllers: dict[str, CombatCharacteristicController] = {}
         self._output_folder: Path = (
@@ -74,6 +79,8 @@ class MonsterCreationController(QWidget):
         self._view.btn_refine_description.clicked.connect(self._refine_description)
         # AI "Generate all" button
         self._view.btn_suggest_all.clicked.connect(self._generate_all)
+        # Database query
+        self._configure_database_query()
         # Encounter details tab
         self._configure_encounter_tab()
         # General Info tab
@@ -92,6 +99,49 @@ class MonsterCreationController(QWidget):
         self._view.btn_import.clicked.connect(self._import_monster)
         self._view.btn_export.clicked.connect(self._export_monster)
         self._view.btn_generate_markdown.clicked.connect(self.generate_markdown_file)
+
+    def _configure_database_query(self) -> None:
+        self._view.cb_db_column_names.addItems(self._db.column_names)
+        self._view.cb_db_operation.addItems([op.name for op in OperationType])
+        self._view.btn_run_db_query.clicked.connect(self._handler_query_db)
+
+    def _handler_query_db(self) -> None:
+        operation = OperationType.from_display_name(
+            self._view.cb_db_operation.currentText()
+        )
+        aggregate_column_name = self._view.cb_db_column_names.currentText()
+        filters = [f.strip() for f in self._view.lineedit_filters.text().split(",")]
+        sanitized_filters = {}
+        for f in filters:
+            column_name, value = f.split(":")
+            match column_name:
+                case "Monster Name":
+                    sanitized_filters[column_name] = str(value)
+                case "CR":
+                    sanitized_filters[column_name] = float(value)
+                case "AC" | "Min HP" | "Max HP" | "Avg HP" | "Number of Attacks" | "STR" | "DEX" | "CON" | "INT" | "WIS" | "CHA":
+                    sanitized_filters[column_name] = int(value)
+                case "Size":
+                    sanitized_filters[column_name] = Size.from_display_name(value)
+                case "Creature Type":
+                    sanitized_filters[column_name] = CreatureType.from_display_name(
+                        value
+                    )
+                case "Legendary" | "Swarm":
+                    sanitized_filters[column_name] = bool(value)
+                case _:
+                    raise NotImplementedError
+        if aggregate_column_name in filters:
+            del filters[aggregate_column_name]
+        try:
+            query_result, sample_size = self._db.query(
+                sanitized_filters, aggregate_column_name, operation
+            )
+            self._view.lbl_db_result.setText(
+                f"{query_result} (Sample Size = {sample_size})"
+            )
+        except ValueError as ve:
+            self._view.lbl_db_result.setText("Invalid query")
 
     def _configure_encounter_tab(self) -> None:
         # Has Lair
