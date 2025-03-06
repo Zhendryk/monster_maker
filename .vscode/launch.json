@@ -8,8 +8,15 @@
             "name": "Monster Forge",
             "type": "python",
             "request": "launch",
-            // "program": "${workspaceFolder}/monster_forge/__main__.py",
             "module": "monster_forge",
+            "console": "integratedTerminal",
+            "justMyCode": true
+        },
+        {
+            "name": "Stats Reader",
+            "type": "python",
+            "request": "launch",
+            "module": "monster_forge.stats_reader",
             "console": "integratedTerminal",
             "justMyCode": true
         },
