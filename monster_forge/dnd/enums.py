@@ -41,6 +41,44 @@ class DNDEnum(Enum):
         ]
 
 
+class Habitat(DNDEnum):
+    ANY = auto()
+    UNDERDARK = auto()
+    URBAN = auto()
+    FOREST = auto()
+    GRASSLAND = auto()
+    ARCTIC = auto()
+    HILL = auto()
+    MOUNTAIN = auto()
+    UNDERWATER = auto()
+    SWAMP = auto()
+    COASTAL = auto()
+    DESERT = auto()
+    PLANAR_ABYSS = auto()
+    PLANAR_NINE_HELLS = auto()
+    PLANAR_UPPER_PLANES = auto()
+    PLANAR_LOWER_PLANES = auto()
+    PLANAR_OUTER_PLANES = auto()
+    PLANAR_LIMBO = auto()
+    PLANAR_FEYWILD = auto()
+    PLANAR_ASTRAL_PLANE = auto()
+    PLANAR_ELEMENTAL_CHAOS = auto()
+    PLANAR_ELEMENTAL_PLANE_OF_FIRE = auto()
+    PLANAR_ELEMENTAL_PLANE_OF_AIR = auto()
+    PLANAR_ELEMENTAL_PLANE_OF_WATER = auto()
+    PLANAR_ELEMENTAL_PLANE_OF_EARTH = auto()
+
+
+class Treasure(DNDEnum):
+    NONE = auto()
+    ANY = auto()
+    ARCANA = auto()
+    ARMAMENTS = auto()
+    IMPLEMENTS = auto()
+    INDIVIDUAL = auto()
+    RELICS = auto()
+
+
 class Ability(DNDEnum):
     STRENGTH = auto()
     DEXTERITY = auto()
