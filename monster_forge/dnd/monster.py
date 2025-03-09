@@ -385,7 +385,16 @@ class Monster:
             ],
             key=lambda x: x.lower(),
         )
-        immunities = ", ".join(dmg_immunities) + "; " + ", ".join(condition_immunities)
+        if dmg_immunities and condition_immunities:
+            immunities = (
+                ", ".join(dmg_immunities) + "; " + ", ".join(condition_immunities)
+            )
+        elif dmg_immunities:
+            immunities = ", ".join(dmg_immunities)
+        elif condition_immunities:
+            immunities = ", ".join(condition_immunities)
+        else:
+            immunities = ""
         return (
             f"**Immunities** :: {immunities}\n"
             if dmg_immunities or condition_immunities
@@ -396,7 +405,7 @@ class Monster:
     def languages_display(self) -> str:
         return (
             (
-                f"**Languages** :: {', '.join([l.display_name for l in self.languages])}\n"
+                f"**Languages** :: {', '.join(sorted([l.display_name for l in self.languages]))}\n"
             )
             if self.languages
             else ""

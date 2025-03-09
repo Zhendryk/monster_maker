@@ -47,9 +47,17 @@ class Dice:
         return sum(cnt for cnt in self.dice.values())
 
     @staticmethod
-    def closest_to(hp: int, monster_size: Size, max_range: int = 51) -> Dice:
+    def closest_to(
+        hp: int, monster_size: Size, ability_scores: AbilityScores, max_range: int = 51
+    ) -> Dice:
         distances = {
-            i: abs(hp - Dice({monster_size.hit_die: i}).average_value)
+            i: abs(
+                hp
+                - (
+                    Dice({monster_size.hit_die: i}).average_value
+                    + (ability_scores.constitution_modifier * i)
+                )
+            )
             for i in range(max_range)
         }
         closest = min(distances, key=lambda k: distances[k])

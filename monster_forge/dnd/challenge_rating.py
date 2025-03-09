@@ -61,7 +61,7 @@ class ChallengeRating:
             hp = math.ceil(15 * (self.rating + 1))
         else:
             hp = math.ceil(45 * (self.rating - 13))
-        hit_dice = Dice.closest_to(hp, monster_size)
+        hit_dice = Dice.closest_to(hp, monster_size, ability_scores)
         return hit_dice.hit_points(ability_scores)
 
     @property
