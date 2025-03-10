@@ -253,6 +253,11 @@ class LanguageProficiency(DNDEnum):
 
 class Language(DNDEnum):
     COMMON = auto()
+    COMMON_PLUS_ONE_OTHER_LANGUAGE = auto()
+    COMMON_PLUS_TWO_OTHER_LANGUAGES = auto()
+    COMMON_PLUS_THREE_OTHER_LANGUAGES = auto()
+    COMMON_PLUS_FOUR_OTHER_LANGUAGES = auto()
+    COMMON_PLUS_FIVE_OTHER_LANGUAGES = auto()
     DWARVISH = auto()
     ELVISH = auto()
     GIANT = auto()
@@ -279,29 +284,12 @@ class Language(DNDEnum):
                 return False
 
     @property
-    def plus_amt(self) -> int:
+    def display_name(self) -> str:
         match self:
-            case Language.COMMON:
-                return 5
+            case Language.COMMON_PLUS_ONE_OTHER_LANGUAGE | Language.COMMON_PLUS_TWO_OTHER_LANGUAGES | Language.COMMON_PLUS_THREE_OTHER_LANGUAGES | Language.COMMON_PLUS_FOUR_OTHER_LANGUAGES | Language.COMMON_PLUS_FIVE_OTHER_LANGUAGES:
+                return " ".join(self.name.split("_")).capitalize()
             case _:
-                return 0
-
-    def display_name_plus_x(self, x: int) -> str:
-        if x > 5 or x < 1:
-            raise ValueError
-        num_words_dict = {1: "one", 2: "two", 3: "three", 4: "four", 5: "five"}
-        return f"{self.display_name} plus {num_words_dict[x]} other language{'s' if x > 1 else ''}"
-
-    @classmethod
-    def from_display_name(cls, name: str) -> Language:
-        if "plus" in name.lower():
-            return next(
-                (x for x in cls if f"{x.display_name.lower()} plus" in name.lower())
-            )
-        for x in cls:
-            if x.name.lower() == "_".join([token for token in name.split(" ")]).lower():
-                return x
-        raise ValueError(f"invalid {cls.__name__}: {name}")
+                return super().display_name
 
 
 class LightingCondition(DNDEnum):

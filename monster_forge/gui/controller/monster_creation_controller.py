@@ -313,12 +313,7 @@ class MonsterCreationController(QWidget):
         self._view.btn_senses_remove.clicked.connect(self._btn_remove_sense_pressed)
         self._view.btn_clear_senses.clicked.connect(self._btn_clear_senses_pressed)
         # Languages
-        language_items = []
-        for l in Language:
-            language_items.append(l.display_name)
-            if l.plus_amt > 0:
-                items_to_Add = [l.display_name_plus_x(i) for i in range(1, l.plus_amt)]
-                language_items.extend(items_to_Add)
+        language_items = [l.display_name for l in Language]
         language_items.append("All")
         self._view.cb_languages.addItems(sorted(language_items))
         self._view.cb_languages.setCurrentIndex(-1)
@@ -395,7 +390,7 @@ class MonsterCreationController(QWidget):
         if not action_description:
             return
         if not self.monster.name:
-            print("monster name required, skipping...")
+            print("Monster name required, skipping...")
             return
         if not self.monster.ability_scores:
             return
