@@ -336,7 +336,14 @@ class MonsterCreationController(QWidget):
         # Some data for combobox population
         self._all_templates = get_all_templates()
         # Action presets
-        self._view.cb_action_presets.addItems(list(self._all_templates.keys()))
+        for item_name, template in self._all_templates.items():
+            self._view.cb_action_presets.addItem(item_name)
+            self._view.cb_action_presets.setItemData(
+                self._view.cb_action_presets.count() - 1,
+                template.description,
+                Qt.ItemDataRole.ToolTipRole,
+            )
+        # self._view.cb_action_presets.addItems(list(self._all_templates.keys()))
         self._view.btn_use_action_preset.clicked.connect(
             self._btn_use_action_preset_clicked
         )
@@ -759,30 +766,34 @@ class MonsterCreationController(QWidget):
                 self._view.cb_encounter_difficulty.blockSignals(True)
                 self._view.spinbox_avg_party_level.blockSignals(True)
                 self._view.spinbox_num_pcs.blockSignals(True)
-                idx = next(
-                    (
-                        i
-                        for i in range(self._view.cb_encounter_size.count())
-                        if self._view.cb_encounter_size.itemText(i)
-                        == self.encounter.size.display_name
-                    ),
-                    -1,
-                )
-                self._view.cb_encounter_size.setCurrentIndex(idx)
-                idx = next(
-                    (
-                        i
-                        for i in range(self._view.cb_encounter_difficulty.count())
-                        if self._view.cb_encounter_difficulty.itemText(i)
-                        == self.encounter.difficulty.display_name
-                    ),
-                    -1,
-                )
-                self._view.cb_encounter_difficulty.setCurrentIndex(idx)
-                self._view.spinbox_avg_party_level.setValue(
-                    self.encounter.avg_party_level or 1
-                )
-                self._view.spinbox_num_pcs.setValue(self.encounter.num_pcs or 1)
+                if self.encounter.size is not None:
+                    idx = next(
+                        (
+                            i
+                            for i in range(self._view.cb_encounter_size.count())
+                            if self._view.cb_encounter_size.itemText(i)
+                            == self.encounter.size.display_name
+                        ),
+                        -1,
+                    )
+                    self._view.cb_encounter_size.setCurrentIndex(idx)
+                if self.encounter.difficulty is not None:
+                    idx = next(
+                        (
+                            i
+                            for i in range(self._view.cb_encounter_difficulty.count())
+                            if self._view.cb_encounter_difficulty.itemText(i)
+                            == self.encounter.difficulty.display_name
+                        ),
+                        -1,
+                    )
+                    self._view.cb_encounter_difficulty.setCurrentIndex(idx)
+                if self.encounter.avg_party_level is not None:
+                    self._view.spinbox_avg_party_level.setValue(
+                        self.encounter.avg_party_level or 1
+                    )
+                if self.encounter.num_pcs is not None:
+                    self._view.spinbox_num_pcs.setValue(self.encounter.num_pcs or 1)
                 self._view.cb_encounter_size.blockSignals(False)
                 self._view.cb_encounter_difficulty.blockSignals(False)
                 self._view.spinbox_avg_party_level.blockSignals(False)

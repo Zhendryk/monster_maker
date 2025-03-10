@@ -158,7 +158,7 @@ class SpellcastingTemplate(CharacteristicTemplate):
 
     def __post_init__(self) -> None:
         if not self.description:
-            self.description = f"The [MON] casts one of the following spells, requiring no Material components and using {self.ability.name.capitalize()} as the spellcasting ability (spell save DC [{self.ability.abbreviation} SPELLSAVE], [{self.ability.abbreviation} ATK] to hit with spell attacks):\n:\n***At Will:*** _???_ (level ??? version)\n:\n***3/Day:*** _???_ (level ??? version)\n:\n***1/Day:*** _???_ (level ??? version)"
+            self.description = f"The [MON] casts one of the following spells, requiring no Material components and using {self.ability.name.capitalize()} as the spellcasting ability (spell save DC [{self.ability.abbreviation} SPELLSAVE], [{self.ability.abbreviation} ATK] to hit with spell attacks):\n:\n***At Will:*** _???_ (level ??? version)\n:\n***3/Day Each:*** _???_ (level ??? version)\n:\n***1/Day Each:*** _???_ (level ??? version)"
 
 
 @dataclass(kw_only=True)
@@ -173,11 +173,11 @@ class SavingThrowTemplate(CharacteristicTemplate):
         if self.targeted:
             self.name = f"{self.ability.name.capitalize()} Saving Throw (Targeted)"
             self.label = self.name
-            self.description = f"_{self.ability.name.capitalize()} Saving Throw:_ DC ???, one creature that ???. _Failure:_ ???. _Success:_ ???. _Failure or Success:_ ???."
+            self.description = f"_{self.ability.name.capitalize()} Saving Throw:_ DC [{self.ability.abbreviation} SAVE], one creature that ???. _Failure:_ ???. _Success:_ ???. _Failure or Success:_ ???."
         else:
             self.name = f"{self.ability.name.capitalize()} Saving Throw"
             self.label = self.name
-            self.description = f"_{self.ability.name.capitalize()} Saving Throw:_ DC ???. _Failure:_ ???. _Success:_ ???. _Failure or Success:_ ???."
+            self.description = f"_{self.ability.name.capitalize()} Saving Throw:_ DC [{self.ability.abbreviation} SAVE]. _Failure:_ ???. _Success:_ ???. _Failure or Success:_ ???."
 
 
 @dataclass(kw_only=True)
@@ -223,7 +223,7 @@ ALL_CHARACTERISTIC_TEMPLATES: Final[Sequence[CharacteristicTemplate]] = [
     TraitTemplate(
         label="Death Burst",
         name="Death Burst",
-        description="The [MON] explodes when it dies. _Dexterity Saving Throw:_ DC ???, each creature in a 5-foot Emanation originating from the [MON]. _Failure:_ [???D???] ??? damage. _Success:_ Half damage.",
+        description="The [MON] explodes when it dies. _Dexterity Saving Throw:_ DC [DEX SAVE], each creature in a 5-foot Emanation originating from the [MON]. _Failure:_ [???D???] ??? damage. _Success:_ Half damage.",
     ),
     TraitTemplate(
         label="Death Jinx",
@@ -293,7 +293,7 @@ ALL_CHARACTERISTIC_TEMPLATES: Final[Sequence[CharacteristicTemplate]] = [
     TraitTemplate(
         label="Mimicry",
         name="Mimicry",
-        description="The [MON] can mimic Beast sounds and Humanoid voices. A creature that hears the sounds can tell they are imitations with a successful DC 14 Wisdom (Insight) check.",
+        description="The [MON] can mimic Beast sounds and Humanoid voices. A creature that hears the sounds can tell they are imitations with a successful DC [WIS SAVE] Wisdom (Insight) check.",
     ),
     TraitTemplate(
         label="Pack Tactics",
@@ -378,6 +378,45 @@ ALL_CHARACTERISTIC_TEMPLATES: Final[Sequence[CharacteristicTemplate]] = [
     ),
     MeleeOrRangedAttackRollTemplate(
         ctype=CharacteristicType.ACTION, ability=Ability.DEXTERITY
+    ),
+    SpellcastingTemplate(
+        ctype=CharacteristicType.ACTION,
+        label=f"Spellcasting (INT)",
+        ability=Ability.INTELLIGENCE,
+    ),
+    SpellcastingTemplate(
+        ctype=CharacteristicType.ACTION,
+        label=f"Spellcasting (WIS)",
+        ability=Ability.WISDOM,
+    ),
+    SpellcastingTemplate(
+        ctype=CharacteristicType.ACTION,
+        label=f"Spellcasting (CHA)",
+        ability=Ability.CHARISMA,
+    ),
+    SavingThrowTemplate(ctype=CharacteristicType.ACTION, ability=Ability.STRENGTH),
+    SavingThrowTemplate(
+        ctype=CharacteristicType.ACTION, ability=Ability.STRENGTH, targeted=True
+    ),
+    SavingThrowTemplate(ctype=CharacteristicType.ACTION, ability=Ability.DEXTERITY),
+    SavingThrowTemplate(
+        ctype=CharacteristicType.ACTION, ability=Ability.DEXTERITY, targeted=True
+    ),
+    SavingThrowTemplate(ctype=CharacteristicType.ACTION, ability=Ability.CONSTITUTION),
+    SavingThrowTemplate(
+        ctype=CharacteristicType.ACTION, ability=Ability.CONSTITUTION, targeted=True
+    ),
+    SavingThrowTemplate(ctype=CharacteristicType.ACTION, ability=Ability.INTELLIGENCE),
+    SavingThrowTemplate(
+        ctype=CharacteristicType.ACTION, ability=Ability.INTELLIGENCE, targeted=True
+    ),
+    SavingThrowTemplate(ctype=CharacteristicType.ACTION, ability=Ability.WISDOM),
+    SavingThrowTemplate(
+        ctype=CharacteristicType.ACTION, ability=Ability.WISDOM, targeted=True
+    ),
+    SavingThrowTemplate(ctype=CharacteristicType.ACTION, ability=Ability.CHARISMA),
+    SavingThrowTemplate(
+        ctype=CharacteristicType.ACTION, ability=Ability.CHARISMA, targeted=True
     ),
     MeleeOrRangedAttackRollTemplate(
         ctype=CharacteristicType.ACTION,
@@ -481,7 +520,7 @@ ALL_CHARACTERISTIC_TEMPLATES: Final[Sequence[CharacteristicTemplate]] = [
         ctype=CharacteristicType.ACTION,
         label="Claw",
         name="Claw",
-        description="_Melee Attack Roll:_ [STR ATK], reach 5 ft. _Hit:_ [STR 1D6] Bludgeoning damage. If the target is a Large or smaller creature, it has the Grappled condition (escape DC 13) from one of two claws.",
+        description="_Melee Attack Roll:_ [STR ATK], reach 5 ft. _Hit:_ [STR 1D6] Slashing damage. If the target is a Large or smaller creature, it has the Grappled condition (escape DC [STR SAVE]) from one of two claws.",
         ability=Ability.STRENGTH,
     ),
     MeleeAttackRollTemplate(
@@ -554,45 +593,6 @@ ALL_CHARACTERISTIC_TEMPLATES: Final[Sequence[CharacteristicTemplate]] = [
         description="_Ranged Attack Roll:_ [DEX ATK], range 30/120 ft. _Hit:_ [DEX 1D6] Piercing damage.",
         ability=Ability.DEXTERITY,
     ),
-    SpellcastingTemplate(
-        ctype=CharacteristicType.ACTION,
-        label=f"Spellcasting (INT)",
-        ability=Ability.INTELLIGENCE,
-    ),
-    SpellcastingTemplate(
-        ctype=CharacteristicType.ACTION,
-        label=f"Spellcasting (WIS)",
-        ability=Ability.WISDOM,
-    ),
-    SpellcastingTemplate(
-        ctype=CharacteristicType.ACTION,
-        label=f"Spellcasting (CHA)",
-        ability=Ability.CHARISMA,
-    ),
-    SavingThrowTemplate(ctype=CharacteristicType.ACTION, ability=Ability.STRENGTH),
-    SavingThrowTemplate(
-        ctype=CharacteristicType.ACTION, ability=Ability.STRENGTH, targeted=True
-    ),
-    SavingThrowTemplate(ctype=CharacteristicType.ACTION, ability=Ability.DEXTERITY),
-    SavingThrowTemplate(
-        ctype=CharacteristicType.ACTION, ability=Ability.DEXTERITY, targeted=True
-    ),
-    SavingThrowTemplate(ctype=CharacteristicType.ACTION, ability=Ability.CONSTITUTION),
-    SavingThrowTemplate(
-        ctype=CharacteristicType.ACTION, ability=Ability.CONSTITUTION, targeted=True
-    ),
-    SavingThrowTemplate(ctype=CharacteristicType.ACTION, ability=Ability.INTELLIGENCE),
-    SavingThrowTemplate(
-        ctype=CharacteristicType.ACTION, ability=Ability.INTELLIGENCE, targeted=True
-    ),
-    SavingThrowTemplate(ctype=CharacteristicType.ACTION, ability=Ability.WISDOM),
-    SavingThrowTemplate(
-        ctype=CharacteristicType.ACTION, ability=Ability.WISDOM, targeted=True
-    ),
-    SavingThrowTemplate(ctype=CharacteristicType.ACTION, ability=Ability.CHARISMA),
-    SavingThrowTemplate(
-        ctype=CharacteristicType.ACTION, ability=Ability.CHARISMA, targeted=True
-    ),
     # Bonus Actions
     BonusActionTemplate(
         label="Leap",
@@ -614,6 +614,87 @@ ALL_CHARACTERISTIC_TEMPLATES: Final[Sequence[CharacteristicTemplate]] = [
     # CharacteristicTemplate(CharacteristicType.LEGENDARY_ACTION, "Blah", "Blah"),
 ]
 
+CUSTOM_TEMPLATES: Final[Sequence[CharacteristicTemplate]] = [
+    # Traits
+    TraitTemplate(
+        label="Corrupting Presence",
+        name="Corrupting Presence",
+        description="Healing spells cast within a 30-foot Emanation from the [MON] restore only half the usual amount of Hit Points.",
+    ),
+    TraitTemplate(
+        label="Dreadful Clarity",
+        name="Dreadful Clarity",
+        description="The [MON] has Advantage on all attacks against any creature that is Frightened by it.",
+    ),
+    TraitTemplate(
+        label="Night Veil",
+        name="Night Veil",
+        description="While in Dim Light or Darkness, the [MON] gains Resistance to Bludgeoning, Piercing and Slashing damage.",
+    ),
+    TraitTemplate(
+        label="Grisly Rebirth",
+        name="Grisly Rebirth",
+        description="When the [MON] dies, roll 1d6. On a result of 5 or higher, at the start of its next turn, it horrifically reanimates with half of its maximum Hit Points. If killed again, this trait does not trigger again.",
+    ),
+    TraitTemplate(
+        label="Eldritch Reflection",
+        name="Eldritch Reflection",
+        description="Once per round, when the [MON] successfully saves against a targeted spell or spell attack by 5 or more, it can immediately reflect the spell back at the caster. The caster must succeed on the original saving throw or be affected by their own spell.",
+    ),
+    TraitTemplate(
+        label="Parasitic Horror",
+        name="Parasitic Horror",
+        description="When the [MON] grapples a creature, that creature must succeed on a DC [CON SAVE] Constitution saving throw or be implanted with a parasite. This parasite will grow for [1D10] days until it transforms its host into a [MON], unless the creature is cured with a Lesser Restoration spell or otherwise has the parasite removed.",
+    ),
+    TraitTemplate(
+        label="Weeping Wounds",
+        name="Weeping Wounds",
+        description="When the [MON] deals damage with a melee attack, the target suffers from deep, bleeding wounds. At the start of the wounded creature's turn, it takes [1D4] Necrotic damage and it cannot regain Hit Points until it or another creature spends an action to staunch the wound, ending this effect.",
+    ),
+    TraitTemplate(
+        label="Blighted Ground",
+        name="Blighted Ground",
+        description="The terrain within 15 feet of the [MON] is considered Difficult Terrain. Creatures who start their turn within this radius must succeed on a DC [CON SAVE] Constitution saving throw or take [1d6] Poison damage and have their speed reduced by 10 feet until the start of their next turn.",
+    ),
+    TraitTemplate(
+        label="Duskrot Carrier",
+        name="Duskrot Carrier",
+        description="The [MON] is a carrier of the Duskrot plague. Creatures hit by the [MON]'s melee attacks must succeed on a DC [CON SAVE] Constitution saving throw or become infected with Duskrot, if it is not already (per Stahltrom's setting-specific disease mechanics).",
+    ),
+    TraitTemplate(
+        label="Stygian Symbiosis",
+        name="Stygian Symbiosis",
+        description="While within 10 feet of another creature with this trait, both creatures gain +2 to their AC as their corrupted flesh briefly knits together.",
+    ),
+    TraitTemplate(
+        label="Skinwalker's Guise",
+        name="Skinwalker's Guise",
+        description="The [MON] can perfectly replicate the appearance, voice and general mannerisms of any creature it has killed within the last 24 hours. A successful DC [WIS SAVE] Insight check reveals its true nature.",
+    ),
+    TraitTemplate(
+        label="Aura of Agony",
+        name="Aura of Agony",
+        description="Whenever a creature within 5 feet of the [MON] deals damage to it with a melee attack, that attacker takes [1D8] Psychic damage as the pain rebounds onto them.",
+    ),
+    TraitTemplate(
+        label="Veinburst",
+        name="Veinburst",
+        description="When the [MON] is first reduced below half of its maximum Hit Points, its veins violently rupture, spraying tainted blood. Each creature within a 10-foot Emanation from the [MON] must succeed on a DC [DEX SAVE] Dexterity saving throw or have the Poisoned condition for 1 minute.",
+    ),
+    # Actions
+    # Bonus Actions
+    # Reactions
+    ReactionTemplate(
+        label="Ghastly Imitation",
+        name="Ghastly Imitation",
+        description="_Trigger:_ The [MON] is the target of any enemy attack roll. _Response:_ The [MON] briefly takes on the visage of the attacker's loved one or ally. The attacker must succeed on a DC [WIS SAVE] saving throw or suffer Disadvantage on that attack.",
+    ),
+    # Legendary Actions
+]
+
 
 def get_all_templates() -> dict[str, CharacteristicTemplate]:
-    return {template.label: template for template in ALL_CHARACTERISTIC_TEMPLATES}
+    return {
+        template.label: template
+        for template in ALL_CHARACTERISTIC_TEMPLATES + CUSTOM_TEMPLATES
+    }
