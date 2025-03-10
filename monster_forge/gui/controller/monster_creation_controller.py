@@ -192,6 +192,8 @@ class MonsterCreationController(QWidget):
         self._view.btn_suggest_size.clicked.connect(self._suggest_size)
         # Challenge Rating
         self._view.lineedit_challenge_rating.setEnabled(False)
+        self._view.lineedit_challenge_rating.editingFinished.connect(self._calc_cr)
+        self._view.checkbox_auto_calc_cr.clicked.connect(self._toggle_auto_calc_cr)
         # AC
         self._view.spinbox_ac.valueChanged.connect(self._ac_changed)
         self._view.checkbox_tie_ac_to_cr.clicked.connect(self._toggle_ac_cr_tie)
@@ -381,6 +383,11 @@ class MonsterCreationController(QWidget):
                     self._view.textedit_action_description.setText(template.description)
                 case _:
                     raise NotImplementedError
+
+    def _toggle_auto_calc_cr(self, checked: bool) -> None:
+        self._view.lineedit_challenge_rating.setEnabled(not checked)
+        self._view._lbl_per_monster_for_x_monsters.setVisible(checked)
+        self._calc_cr()
 
     def _btn_create_action_clicked(self) -> None:
         action_title = self._view.lineedit_action_name.text()
@@ -668,32 +675,44 @@ class MonsterCreationController(QWidget):
             self._view.lineedit_hp.setText(self.monster.hp)
 
     def _calc_cr(self, *args) -> None:
-        encounter_size = self._view.cb_encounter_size.currentText()
-        if not encounter_size:
-            return
-        encounter_difficulty = self._view.cb_encounter_difficulty.currentText()
-        if not encounter_difficulty:
-            return
-        avg_party_level = self._view.spinbox_avg_party_level.value()
-        if not avg_party_level:
-            return
-        num_pcs = self._view.spinbox_num_pcs.value()
-        if not num_pcs:
-            return
-        self.encounter = Encounter(
-            size=EncounterSize.from_display_name(encounter_size),
-            difficulty=EncounterDifficulty.from_display_name(encounter_difficulty),
-            num_pcs=num_pcs,
-            avg_party_level=avg_party_level,
-        )
-        self._view.lineedit_challenge_rating.setText(str(self.encounter.monster_cr))
-        self.monster.challenge_rating = ChallengeRating(
-            self.encounter.monster_cr,
-            self._view.checkbox_has_lair.isChecked(),
-        )
-        self._view._lbl_per_monster_for_x_monsters.setText(
-            f"per monster, for {self.encounter.num_monsters} monsters"
-        )
+        if self._view.checkbox_auto_calc_cr.isChecked():
+            encounter_size = self._view.cb_encounter_size.currentText()
+            if not encounter_size:
+                return
+            encounter_difficulty = self._view.cb_encounter_difficulty.currentText()
+            if not encounter_difficulty:
+                return
+            avg_party_level = self._view.spinbox_avg_party_level.value()
+            if not avg_party_level:
+                return
+            num_pcs = self._view.spinbox_num_pcs.value()
+            if not num_pcs:
+                return
+            self.encounter = Encounter(
+                size=EncounterSize.from_display_name(encounter_size),
+                difficulty=EncounterDifficulty.from_display_name(encounter_difficulty),
+                num_pcs=num_pcs,
+                avg_party_level=avg_party_level,
+            )
+            self._view.lineedit_challenge_rating.setText(str(self.encounter.monster_cr))
+            self.monster.challenge_rating = ChallengeRating(
+                self.encounter.monster_cr,
+                self._view.checkbox_has_lair.isChecked(),
+            )
+            self._view._lbl_per_monster_for_x_monsters.setText(
+                f"per monster, for {self.encounter.num_monsters} monsters"
+            )
+        else:
+            cr_txt = self._view.lineedit_challenge_rating.text()
+            try:
+                cr = float(cr_txt)
+                challenge_rating = ChallengeRating(
+                    cr, self._view.checkbox_has_lair.isChecked()
+                )
+                self.monster.challenge_rating = challenge_rating
+            except:
+                print("CR not provided yet, skipping...")
+                return
         if self._view.checkbox_tie_ac_to_cr.isChecked():
             self._view.spinbox_ac.setValue(self.monster.challenge_rating.armor_class)
         if (
