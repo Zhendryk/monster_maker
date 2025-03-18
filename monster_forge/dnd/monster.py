@@ -402,13 +402,37 @@ class Monster:
         )
 
     @property
+    def vulnerabilities_display(self) -> str:
+        dmg_vulnerabilities = sorted(
+            [
+                dt.display_name
+                for dt, res in self.damage_resistances.items()
+                if res == Resistance.VULNERABLE
+            ],
+            key=lambda x: x.lower(),
+        )
+        condition_immunities = sorted(
+            [
+                condition.display_name
+                for condition, resistance in self.condition_resistances.items()
+                if resistance == Resistance.IMMUNE
+            ],
+            key=lambda x: x.lower(),
+        )
+        if dmg_vulnerabilities:
+            vulns = ", ".join(dmg_vulnerabilities)
+        else:
+            vulns = ""
+        return f"**Vulnerabilities** :: {vulns}\n" if dmg_vulnerabilities else ""
+
+    @property
     def languages_display(self) -> str:
         return (
             (
                 f"**Languages** :: {', '.join(sorted([l.display_name for l in self.languages]))}\n"
             )
             if self.languages
-            else ""
+            else "**Languages** :: —"
         )
 
     @property
@@ -562,6 +586,7 @@ class Monster:
             f"{self.skills_display}"
             f"{self.resistances_display}"
             f"{self.immunities_display}"
+            f"{self.vulnerabilities_display}"
             f"{self.senses_display}"
             f"{self.languages_display}"
             f"**CR** :: {self.challenge_rating.display}\n"

@@ -292,6 +292,9 @@ class MonsterCreationController(QWidget):
         self._view.btn_damage_immune.clicked.connect(
             partial(self._btn_add_damage_pressed, Resistance.IMMUNE)
         )
+        self._view.btn_damage_vulnerable.clicked.connect(
+            partial(self._btn_add_damage_pressed, Resistance.VULNERABLE)
+        )
         self._view.btn_damage_remove.clicked.connect(self._btn_remove_damage_pressed)
         self._view.btn_clear_damage.clicked.connect(self._btn_clear_damage_pressed)
         # Condition immunities
